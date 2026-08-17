@@ -1,1 +1,1 @@
-# my-cool-site
+# SnapChat
